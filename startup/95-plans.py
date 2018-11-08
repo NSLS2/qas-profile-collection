@@ -48,40 +48,26 @@ def slit_scan_plan(detectors, num, slit1, slit2, rel_start, rel_stop):
 
 def general_scan_plan(detectors, motor, rel_start, rel_stop, num):
 
-    
+
     plan = bp.relative_scan(detectors, motor, rel_start, rel_stop, num)
-    
+
     if hasattr(detectors[0], 'kickoff'):
         plan = bpp.fly_during_wrapper(plan, detectors)
 
     yield from plan
 
 
-def prep_traj_plan(delay = 0.1):
+def prep_traj_plan(delay=0.1):
+    st = DeviceStatus(mono1.trajectory_ready)
+
+    def check_done(value, old_value, **kwargs):
+        if value and not old_value:
+            st._finished()
+
+    mono1.trajectory_ready.subscribe(check_done)
+
     yield from bps.abs_set(mono1.prepare_trajectory, '1', wait=True)
-
-    # Poll the trajectory ready pv
-    while True:
-        ret = (yield from bps.read(mono1.trajectory_ready))
-        if ret is None:
-            break
-        is_running = ret['mono1_trajectory_ready']['value']
-
-        if is_running:
-            break
-        else:
-            yield from bps.sleep(.1)
-
-    while True:
-        ret = (yield from bps.read(mono1.trajectory_ready))
-        if ret is None:
-            break
-        is_running = ret['mono1_trajectory_ready']['value']
-
-        if is_running:
-            yield from bps.sleep(.05)
-        else:
-            break
+    yield from bps.wait_for(st)
 
     yield from bps.sleep(delay)
 
@@ -167,7 +153,7 @@ def execute_trajectory(name, ignore_shutter=True, **metadata):
                     break
 
 
-        yield from bpp.finalize_wrapper(poll_the_traj_plan(), 
+        yield from bpp.finalize_wrapper(poll_the_traj_plan(),
                                        bps.abs_set(mono1.stop_trajectory, '1', wait=True)
                                       )
 
@@ -202,7 +188,7 @@ def get_offsets_plan(detectors, num = 1, name = '', **metadata):
     >>> RE(get_offset([pba1.adc1, pba1.adc6, pba1.adc7, pba2.adc6]))
     """
 
-    flyers = detectors 
+    flyers = detectors
 
     plan = bp.count(flyers, num, md={'plan_name': 'get_offset', 'name': name}, delay = 0.5)
 
