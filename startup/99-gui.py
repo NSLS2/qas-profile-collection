@@ -9,6 +9,7 @@ from bluesky.examples import motor
 motor.move = motor.set
 
 
+# TODO: move the *_dictionaries to 40-dictionaries.py as at ISS.
 detector_dictionary = {colmirror_diag.name: {'obj': colmirror_diag, 'elements': [colmirror_diag.stats1.total.name, colmirror_diag.stats2.total.name]},
                        screen_diag.name: {'obj': screen_diag, 'elements': [screen_diag.stats1.total.name, screen_diag.stats2.total.name]},
                        mono_diag.name: {'obj': mono_diag, 'elements': [mono_diag.stats1.total.name, mono_diag.stats2.total.name]},
@@ -42,6 +43,12 @@ shutters_dictionary = {
                        shutter_fs.name: shutter_fs,
                        }
 
+ic_amplifiers = {'i0_amp': i0_amp,
+                 'it_amp': it_amp,
+                 'ir_amp': ir_amp,
+                 'iff_amp': iff_amp,
+                 }
+
 sample_stages = [{'x': sample_stage1.x.name, 'y': sample_stage1.y.name}]
 
 print(mono1)
@@ -66,7 +73,8 @@ xlive_gui = isstools.xlive.XliveGui(plan_funcs={
                                     shutters_dict=shutters_dictionary,
                                     det_dict=detector_dictionary,
                                     motors_dict=motors_dictionary,
-                                    sample_stages = sample_stages,
+                                    ic_amplifiers=ic_amplifiers,
+                                    sample_stage=sample_stages,
                                     window_title="XLive @QAS/7-BM NSLS-II",
                                    )
 
@@ -90,4 +98,4 @@ def xlive():
 #print('starting pyinstrument profiler')
 ## jlynch 8/30
 
-xlive()
+# xlive()

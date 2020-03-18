@@ -33,13 +33,17 @@ class EPS_Shutter(Device):
 
 
 class TwoButtonShutterQAS(TwoButtonShutter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.state = self.status
+
     def stop(self, success=False):
         pass
 
 
 class QASFastShutter(Device):
     IO_status = Cpt(EpicsSignal, '', kind='omitted')
-    status = Cpt(EpicsSignal, '', kind='omitted')
+    state = status = Cpt(EpicsSignal, '', kind='omitted')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
