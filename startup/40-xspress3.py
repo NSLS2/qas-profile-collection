@@ -211,12 +211,17 @@ class QASXspress3Detector(XspressTrigger, Xspress3Detector):
                           f'does not match the length of "self._datum_ids" ({len_datum_ids})')
 
         num_frames = min(len_di_timestamps, len_datum_ids)
+
+        # For the same timestamp for all frames, uncomment the next line, and comment the line within the loop.
+        # ts = float(ttime.time())
         for frame_num in range(num_frames):
             datum_id = self._datum_ids[frame_num]
             ts = di_timestamps[frame_num]
 
             data = {self.name: datum_id}
             # TODO: fix the lost precision as pymongo complained about np.float128.
+
+            # Comment the following line to use the same timestamp for frames.
             ts = float(ts)
             yield {'data': data,
                    'timestamps': {key: ts for key in data},
