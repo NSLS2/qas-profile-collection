@@ -558,6 +558,6 @@ xsflyer_pb2 = XSFlyer(pb=pb2,
                       motor=mono1)
 
 
-def xs_plan():
+def xs_plan(plan_md=None):
     yield from bps.mv(xsflyer_pb2.motor, 'prepare')
-    yield from bp.fly([xsflyer_pb2])
+    yield from bp.fly([xsflyer_pb2], md=plan_md)

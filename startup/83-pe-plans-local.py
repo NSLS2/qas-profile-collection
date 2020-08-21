@@ -7,7 +7,7 @@ import uuid
 
 # this is the original, correct pe_count
 # renamed pe_count_ to hide it from xlive while testing the new pe_count
-def pe_count_(filename='', exposure = 1, num_images:int = 1, num_dark_images:int = 1, num_repetitions:int = 5, delay = 60):
+def pe_count(filename='', exposure = 1, num_images:int = 1, num_dark_images:int = 1, num_repetitions:int = 5, delay = 60):
 
     year     = RE.md['year']
     cycle    = RE.md['cycle']
@@ -129,7 +129,7 @@ class QASPerkinElmerDarkDetector():
                 self.name: {"source": "astral plane", "dtype": "array", "shape": []}
             }
         )
-        description.update(pe1.describe())
+        description.update(pe1c.describe())
         description.update(self.external_file_ref.describe())
         description.update(shutter_fs.describe())
 
@@ -144,7 +144,7 @@ class QASPerkinElmerDarkDetector():
         configuration.update(
             {self.name: {"source": "??", "dtype": "array", "shape": (2048, 2048)}}
         )
-        configuration.update(pe1.describe_configuration())
+        configuration.update(pe1c.describe_configuration())
         configuration.update(self.external_file_ref.describe_configuration())
         configuration.update(shutter_fs.describe_configuration())
         
@@ -159,7 +159,7 @@ class QASPerkinElmerDarkDetector():
         configuration.update(
             {self.name: {"value": 0, "timestamp": time.time()}}
         )
-        configuration.update(pe1.read_configuration())
+        configuration.update(pe1c.read_configuration())
         configuration.update(shutter_fs.read_configuration())
         configuration.update(self.external_file_ref.read_configuration())
 
@@ -183,8 +183,8 @@ class QASPerkinElmerDarkDetector():
         self._resource.pop("run_start")
         self._asset_docs_cache.append(("resource", self._resource))
 
-        pe1.tiff.file_number.put(1)
-        pe1.tiff.file_path.put(self.file_path)
+        pe1c.tiff.file_number.put(1)
+        pe1c.tiff.file_path.put(self.file_path)
 
         self._staged = True
 
@@ -193,16 +193,16 @@ class QASPerkinElmerDarkDetector():
         print("trigger!")
         
         # what about file path?
-        pe1.tiff.file_name.put(self.filename)
+        pe1c.tiff.file_name.put(self.filename)
         if self.num_dark_images > 0:
             pe1.num_dark_images.put(self.num_dark_images)
             pe1.cam.image_mode.put('Average')
             ## shutter_fs.put('Close')
-            shutter_fs.set('Close')
+            shutter_fs.get('Close')
             time.sleep(0.5)
             ##yield from bps.sleep(0.5)
             pe1.tiff.file_write_mode.put('Single')
-            pe1c.set('acquire_dark')
+            pe1c.put('acquire_dark')
             pe1.tiff.write_file.put(1)
 
         datum = self._datum_factory(
@@ -219,32 +219,32 @@ class QASPerkinElmerDarkDetector():
 
     def read(self):
         print("read!")
-        ##pe1.cam.image_mode.put('Multiple')
-        pe1.cam.image_mode.put('Average')
+        ##pe1c.cam.image_mode.put('Multiple')
+        pe1c.cam.image_mode.put('Average')
         pe1.cam.acquire_time.put(self.exposure)
-        pe1.cam.num_images.put(self.num_images)
+        pe1c.cam.num_images.put(self.num_images)
 
-        shutter_fs.set('Open')
+        shutter_fs.get('Open')
         ##yield from bps.sleep(0.5)
 
         ## Below 'Capture' mode is used with 'Multiple' image_mode
-        #pe1.tiff.file_write_mode.put('Capture')
+        #pe1c.tiff.file_write_mode.put('Capture')
 
         ## Below 'Single' mode is used with 'Average' image_mode
-        pe1.tiff.file_write_mode.put('Single')
+        pe1c.tiff.file_write_mode.put('Single')
 
         ## Uncomment 'capture' bit settings when used in 'Capture' mode
-        #pe1.tiff.capture.put(1)
-        pe1c.set('acquire_light')
+        #pe1c.tiff.capture.put(1)
+        pe1c.put('acquire_light')
         ##yield from bps.sleep(1)
-        pe1.tiff.capture.put(0)
+        pe1c.tiff.capture.put(0)
 
         ##Below write_file is needed when used in 'Average' mode
-        pe1.tiff.write_file.put(1)
+        pe1c.tiff.write_file.put(1)
 
         read_results = dict()
         read_results.update({self.name: {"value": 0, "timestamp": time.time()}})
-        read_results.update(pe1.read())
+        read_results.update(pe1c.read())
         read_results.update(shutter_fs.read())
         read_results.update(self.external_file_ref.read())
 
@@ -271,8 +271,11 @@ class QASPerkinElmerDarkDetector():
 pe1_dark = QASPerkinElmerDarkDetector()
 
 
+from functools import partial
+
+
 # this is the new, experimental pe_count
-def pe_count(
+def pe_count_(
         resource_root='Z:\\users\\',
         resource_dir_path='{year}\\{cycle}\\{PROPOSAL}XRD\\',
         filename='',
@@ -299,6 +302,20 @@ def pe_count(
     yield from bp.count(
         [pe1_dark],
         num=num_repetitions,
-        delay=delay
+        delay=delay,
     )
+
+    # assuming pe_count should not start a run, try this
+    # but using this gave
+    # bluesky.utils.IllegalMessageSequence: Cannot bundle readings without an open run.
+    # so maybe pe_count should start a run
+
+    # pe1_dark.stage()
+    # yield from bps.repeat(
+    #     partial(bps.trigger_and_read, [pe1_dark]),
+    #     num=num_repetitions,
+    #     delay=delay
+    # )
+    # pe1_dark.unstage()
+
 
