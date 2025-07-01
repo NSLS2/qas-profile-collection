@@ -444,3 +444,32 @@ self.gain_1 = EpicsSignal(self.prefix + gain_1, name=self.name + '_gain_1')
 # map_list = map(int, voltages)
 #
 # RE(bp.list_scan([apb_ave], wps_i0, *map_list))
+
+
+class WPS_Scan(Device):
+    setpoint = Cpt(EpicsSignal, '-Set')
+    readback = Cpt(EpicsSignalRO, '-Sense')
+
+    def set(self, value):
+        return self.setpoint.set(value).wait()
+
+    def read(self):
+        return {'WPS_scan': {'value':self.readback.get(), 'timestamp': time.time()}}
+
+    def describe(self):
+        return {'WPS_scan': {'source': 'PV-Sense', 'dtype': 'number', 'shape': []}}
+
+    def stop(self, *, success=False):
+        self.setpoint.stop()
+
+    def is_moving(self):
+        return False
+
+    def read_configuration(self):
+        return {}
+
+    def describe_configuration(self):
+        return {}
+
+
+wps_i0 = WPS_Scan('XF:07BMB-OP{WPS:01-HV:u300}V', name='wps_i0')
