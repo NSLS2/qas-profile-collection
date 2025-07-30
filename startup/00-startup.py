@@ -78,7 +78,7 @@ beamline_id = 'qas'
 
 from databroker.v0 import Broker
 # from databroker import Broker
-db = Broker.named(beamline_id)
+db = Broker.named('local-318869')
 
 nslsii.configure_base(
     get_ipython().user_ns, 
@@ -155,9 +155,10 @@ logging.getLogger('caproto.ch').setLevel('ERROR')
 # print(f'\nThe caproto logs will be written to {caproto_log}')
 # print(f'The bluesky logs will be written to {bluesky_log}\n')
 
-ROOT_PATH        = '/nsls2/data/qas-new/legacy'
+#ROOT_PATH        = '/nsls2/data/qas-new/legacy'
+ROOT_PATH        = '/nsls2/data/qas-new/proposals/2025-2/pass-318869'
 ROOT_PATH_SHARED = '/nsls2/data/qas-new/shared'
-RAW_FILEPATH = 'raw'
+RAW_FILEPATH = 'assets'
 USER_FILEPATH = 'processed'
 
 #def print_to_gui(string, stdout=sys.stdout):

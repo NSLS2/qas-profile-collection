@@ -41,7 +41,7 @@ class AnalogPizzaBoxTrigger(Device):
         # self.filename_target = f'{ROOT_PATH}/data/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # Note: temporary static file name in GPFS, due to the limitation of 40 symbols in the filename field.
         # self.filename = f'{ROOT_PATH}/data/apb/{file_uid[:8]}'
-        self.fn = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
+        self.fn = f'{ROOT_PATH}/{RAW_FILEPATH}/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
         self.filename.put(f'{self.fn}')
 
         self._resource_uid = new_uid()

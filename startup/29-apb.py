@@ -257,7 +257,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         #self.filename = f'/home/Sace{file_uid[:8]}'
 
 
-        self.filename = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
+        self.filename = f'{ROOT_PATH}/{RAW_FILEPATH}/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # self.filename = f'/home/xf07bm/TestData/raw/apb/2023/03/28/{file_uid}'
         self.filename_bin.put(f'{self.filename}.bin')
         self.filename_txt.put(f'{self.filename}.txt')

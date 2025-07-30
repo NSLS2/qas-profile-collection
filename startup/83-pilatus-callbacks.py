@@ -48,7 +48,7 @@ def pilatus_serializer_factory(name, doc):
     # filename = '/nsls2/data/qas-new/legacy/processed/{year}/{cycle}/{PROPOSAL}Pilatus/test'.format(**doc)
     import datetime
     serializer = Serializer(
-        '/nsls2/data/qas-new/legacy/processed/{year}/{cycle}/{PROPOSAL}Pilatus'.format(**doc),
+        '/nsls2/data/qas-new/proposals/2025-2/pass-318869/processed/{year}/{cycle}/{PROPOSAL}Pilatus'.format(**doc),
         file_prefix = (
             '{start[sample_name]}-'
             '{start[subframe_time]:.1f}s-'
@@ -125,10 +125,10 @@ def export_md_to_txt(md, folder=None):
     if folder is None:
         # Reconstruct folder based on typical QAS structure        
         
-        folder = "/nsls2/data/qas-new/legacy/processed/{}/{}/{}Pilatus".format(md['year'], md['cycle'], md['PROPOSAL'])
+        folder = "/nsls2/data/qas-new/proposals/2025-2/pass-318869/processed/{}/{}/{}Pilatus".format(md['year'], md['cycle'], md['PROPOSAL'])
         #print(folder)
 
-    os.makedirs(folder, exist_ok=True)
+    #os.makedirs(folder, exist_ok=True)
     
     frame_count = md.get('frame_count', 1)  # Get frame_count from md, default to 1 if missing
     for i in range(1, frame_count + 1):  # Loop from 1 to frame_count inclusive

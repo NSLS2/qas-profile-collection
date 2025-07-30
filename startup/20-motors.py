@@ -44,7 +44,8 @@ class Monochromator(Device):
     _default_read_attrs = ('bragg', 'energy', 'pico', 'diag')
     "Monochromator"
     ip = '10.68.50.104'
-    traj_filepath = '/home/xf07bm/trajectory/'
+    #traj_filepath = '/home/xf07bm/trajectory/'
+    traj_filepath = '/nsls2/users/agetsoian/bsui_qas/trajectory/'
     bragg = Cpt(EpicsMotor, 'Mono:1-Ax:Scan}Mtr')
     energy = Cpt(EpicsMotor, 'Mono:1-Ax:E}Mtr')
     pico = Cpt(EpicsMotor, 'Mono:1-Ax:Pico}Mtr')

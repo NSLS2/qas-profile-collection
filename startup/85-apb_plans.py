@@ -140,7 +140,8 @@ def get_traj_duration():
 #Not good fix for the problem with knowing whether we have oscillatory trajectory running over it.
 
 def parse_trajectory_header(trajectory_filename=None):
-    path = '/home/xf07bm/trajectory/'
+    #path = '/home/xf07bm/trajectory/'
+    path = '/nsls2/users/agetsoian/bsui_qas/trajectory/'
     with open(path + trajectory_filename, 'r') as f:
         line = f.readline()
     header = line[1:].split(',')

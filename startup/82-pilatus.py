@@ -14,10 +14,10 @@ from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite, Fil
 from ophyd.areadetector.plugins import ImagePlugin_V33, ROIStatPlugin_V34
 from ophyd.sim import NullStatus
 
-ROOT_PATH = "/nsls2/data/qas-new/legacy"
-ROOT_PATH_SHARED = "/nsls2/data/qas-new/shared"
-RAW_PATH = "raw"
-USER_FILEPATH = "processed"
+#ROOT_PATH = "/nsls2/data/qas-new/legacy"
+#ROOT_PATH_SHARED = "/nsls2/data/qas-new/shared"
+RAW_PATH = RAW_FILEPATH
+#USER_FILEPATH = "processed"
 
 ######################################################################################
 
