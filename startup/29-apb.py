@@ -240,7 +240,6 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._acquiring = None
-        # self.ssh = paramiko.SSHClient()
 
         self._asset_docs_cache = deque()
         self._resource_uid = None
@@ -332,24 +331,6 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         return filebin_st & filetxt_st
 
     def collect(self):
-        # self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        # server = self._IP
-        # try:
-        #     self.ssh.connect(server, username='root')
-        # except paramiko.ssh_exception.SSHException:
-        #     raise RuntimeError('SSH connection could not be established. Create SSH keys')
-        # with self.ssh.open_sftp() as sftp:
-        #     print(f'Storing a binary file from {server} to {self.filename_bin}')
-        #     sftp.get('/home/Save/FAstream.bin',  # TODO: make it configurable
-        #              self.filename_bin)
-        #     print(f'Storing a text   file from {server} to {self.filename_txt}')
-        #     sftp.get('/home/Save/FAstreamSettings.txt',  # TODO: make it configurable
-        #              self.filename_txt)
-        # import shutil
-        # for ext in ['bin', 'txt']:
-        #     ret = shutil.move(f'{self.filename}.{ext}', f'{self.filename_target}.{ext}')
-        #     print(f'File moved: {ret}')
-
         print(f'APB collect is complete {ttime.ctime(ttime.time())}')
 
         # Copied from 10-detectors.py (class EncoderFS)
