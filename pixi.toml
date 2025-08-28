@@ -27,10 +27,17 @@ ply = ">=3.11,<4"
 colorlog = ">=6.9.0,<7"
 epicscorelibs = "*"
 pydantic-numpy = "*"
+termcolor = ">=3.1.0,<4"
+suitcase-tiff = ">=0.4.0,<0.5"
+pyqt = "<6"
+xraydb = ">=4.5.8,<5"
+bluesky-darkframes = ">=0.6.0,<0.7"
 
 
 [feature.profile.pypi-dependencies]
 ophyd-async = { version = ">=0.9.0, <0.10", extras = ["ca", "pva"] }
+isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev = "1292723" }
+xas = { git = "https://github.com/nsls-ii-iss/xas" }
 
 
 [feature.qs.dependencies]
