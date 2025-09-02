@@ -132,7 +132,7 @@ plan_funcs = {
 for shutter in shutters_dictionary.values():
     shutter.status.wait_for_connection()
 
-raise RuntimeError()
+# raise RuntimeError()
 
 ipython = get_ipython()
 if ipython is not None:
