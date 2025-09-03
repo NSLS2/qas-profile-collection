@@ -67,7 +67,7 @@ class AnalogPizzaBoxTrigger(Device):
         # self.tiff.capture.put(1)
         # self.hdf5.capture.put(1)
         # self.cam.acquire.put(1)
-
+        # self.max_counts.put(self.num_points)
         self.stream.put(1)
         ttime.sleep(0.2)
         self.acquire.put(2)
@@ -87,6 +87,7 @@ class AnalogPizzaBoxTrigger(Device):
     def complete(self, *args, **kwargs):
         def callback_saving(value, old_value, **kwargs):
             if int(round(old_value)) == 1 and int(round(value)) == 0:
+                print("APB TRIGGER SAVING COMPLETE")
                 self.acquire.put(0)
                 self.stream.put(0)
                 return True

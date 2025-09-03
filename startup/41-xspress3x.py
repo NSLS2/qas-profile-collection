@@ -47,9 +47,8 @@ CommunityXspress3_8Channel = build_xspress3_class(
             name="hdf5",
             resource_kwargs={},
             # These are overriden by properties.
-            path_template="%Y",
-            # path_template="%Y/%m/%d",
-
+            # path_template="%Y",
+            path_template="%Y/%m/%d",
             root_path="/nsls2/data/qas-new/legacy/raw/xspress3x/",
         )
     }
@@ -60,10 +59,118 @@ class QASXspress3XDetector(CommunityXspress3_8Channel):
         if configuration_attrs is None:
             configuration_attrs = ["external_trig", "total_points", "spectra_per_point", "cam", "rewindable"]
         super().__init__(prefix, configuration_attrs=configuration_attrs, read_attrs=read_attrs, **kwargs)
+        for channel in self.iterate_channels():
+            channel.kind = "Hinted"
+            for mcaroi in channel.iterate_mcarois():
+                mcaroi.kind = "Hinted"
+                mcaroi.total_rbv.kind = "Hinted"
+        self._asset_docs_cache = deque()
+        self._datum_counter = None
+        self._datum_ids = []
 
 
-xsx = CommunityXspress3_8Channel('XF:07BM-ES{Xsp:2}:', name='xsx')
-xsx_stream = CommunityXspress3_8Channel('XF:07BM-ES{Xsp:2}:', name='xsx_stream')
+class QASXspress3XDetectorStream(QASXspress3XDetector):
+
+    def stage(self, acq_rate, traj_time, *args, **kwargs):
+        self.hdf5.file_write_mode.put(2)  # put it to Stream |||| IS ALREADY STREAMING
+        self.external_trig.put(True)
+        self.set_expected_number_of_points(acq_rate, traj_time)
+        self.spectra_per_point.put(1)
+        self.cam.trigger_mode.put(3)  # put the trigger mode to TTL in
+        self.cam.erase.put(1)
+
+        super().stage(*args, **kwargs)
+        self._datum_counter = itertools.count()
+        # note, hdf5 is already capturing at this point
+        self.cam.num_images.put(self._num_points)
+        self.cam.acquire.put(1)  # start recording data
+
+    def unstage(self):
+        self.hdf5.capture.put(0)
+        super().unstage()
+        self._datum_counter = None
+
+    def set_expected_number_of_points(self, acq_rate, traj_time):
+        self._num_points = int(acq_rate * (traj_time + 1))
+        self.total_points.put(self._num_points)
+
+    def describe_collect(self):
+        return_dict = {self.name:
+                           {f'{self.name}': {'source': 'XS',
+                                             'dtype': 'array',
+                                             'shape': [self.cam.num_images.get(),
+                                                       # self.settings.array_counter.get()
+                                                       self.hdf5.array_size.height.get(),
+                                                       self.hdf5.array_size.width.get()],
+                                             'filename': f'{self.hdf5.full_file_name.get()}',
+                                             'external': 'FILESTORE:'}}}
+        return return_dict
+
+    def collect(self):
+        # num_frames = len(self._datum_ids)
+        num_frames = self.hdf5.num_captured.get()
+        # break num_frames up and yield in sections?
+
+        for frame_num in range(num_frames):
+            datum_id = self._datum_ids[frame_num]
+            data = {self.name: datum_id}
+            ts = ttime.time()
+
+            yield {'data': data,
+                   'timestamps': {key: ts for key in data},
+                   'time': ts,  # TODO: use the proper timestamps from the mono start and stop times
+                   'filled': {key: False for key in data}}
+            # print(f"-------------------{ts}-------------------------------------")
+
+    def collect_asset_docs(self):
+        items = list(self._asset_docs_cache)
+        self._asset_docs_cache.clear()
+        yield from items
+
+    def complete(self, *args, **kwargs):
+        # print("x C1")
+        for resource in self.hdf5._asset_docs_cache:
+            # print(resource)
+            self._asset_docs_cache.append(('resource', resource[1]))
+
+        self._datum_ids = []
+
+        num_frames = self.hdf5.num_captured.get()
+        print("x C2", num_frames)
+
+        # print(f'\n!!! num_frames: {num_frames}\n')
+        # print(num_frames)
+        for frame_num in range(num_frames):
+            for channel in self.iterate_channels():
+                datum_id = '{}/{}'.format(self.hdf5._resource['uid'], next(self._datum_counter))
+                datum = {'resource': self.hdf5._resource['uid'],
+                         'datum_kwargs': {'frame': frame_num, 'channel': channel.channel_number},
+                         'datum_id': datum_id}
+                print(datum)
+                self._asset_docs_cache.append(('datum', datum))
+                self._datum_ids.append(datum_id)
+        #     print(frame_num)
+        #     print(self.hdf5._resource_uid)
+            # raise
+            # if self.hdf5._resource_uid is not None:
+            #     # raise
+            #     print(self._datum_counter)
+            #     datum_id = '{}/{}'.format(self.hdf5._resource_uid, next(self._datum_counter))
+            #     print(datum_id)
+            #     datum = {'resource': self.hdf5._resource_uid,
+            #              'datum_kwargs': {'frame': frame_num},
+            #              'datum_id': datum_id}
+            #     print(datum)
+            #     self._asset_docs_cache.append(('datum', datum))
+            #     self._datum_ids.append(datum_id)
+
+        print("x C3", num_frames)
+
+        return NullStatus()
+
+
+xsx = QASXspress3XDetector('XF:07BM-ES{Xsp:2}:', name='xsx')
+xsx_stream = QASXspress3XDetectorStream('XF:07BM-ES{Xsp:2}:', name='xsx_stream')
 
 # class Xspress3FileStoreFlyable(Xspress3FileStore):
 #     def warmup(self):
@@ -607,6 +714,8 @@ class QASXspress3XHDF5Handler(Xspress3HDF5Handler):
         super().__init__(*args, **kwargs)
         self._roi_data = None
         self._num_channels = None
+        self.HANDLER_NAME = "XSP3X"
+
 
     def _get_dataset(
             self):  # readpout of the following stuff should be done only once, this is why I redefined _get_dataset method - Denis Leshchev Feb 9, 2021
@@ -640,7 +749,7 @@ class QASXspress3XHDF5Handler(Xspress3HDF5Handler):
 
 
 # heavy-weight file handler
-db.reg.register_handler(QASXspress3XHDF5Handler.HANDLER_NAME,
+db.reg.register_handler(f"{QASXspress3XHDF5Handler.HANDLER_NAME}X",
                         QASXspress3XHDF5Handler, overwrite=True)
 
 

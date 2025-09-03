@@ -272,7 +272,6 @@ class QASXspress3Detector(XspressTrigger, Xspress3Detector):
 
 xs = QASXspress3Detector('XF:07BMB-ES{Xsp:1}:', name='xs')
 
-
 def initialize_Xspress3(xs, hdf5_warmup=True):
     # TODO: do not put on startup or do it conditionally, if on beamline.
     xs.channel2.vis_enabled.put(1)

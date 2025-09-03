@@ -291,6 +291,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         return status
 
     def unstage(self, *args, **kwargs):
+        print("APBStream unstaging")
         # self._datum_counter = None
         # st = self.stream.set(0)
         super().unstage(*args, **kwargs)
