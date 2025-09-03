@@ -376,6 +376,7 @@ class QASXspress3DetectorStream(QASXspress3Detector):
 
     def collect_asset_docs(self):
         items = list(self._asset_docs_cache)
+        # print("items", items)
         self._asset_docs_cache.clear()
         for item in items:
             yield item
@@ -420,6 +421,7 @@ class QASXspress3HDF5Handler(Xspress3HDF5Handler):
         self._roi_data = pd.DataFrame(data_columns, columns=self.chanrois)
 
     def __call__(self, *args, frame=None, **kwargs):
+        print("XS3 Handler called")
         self._get_dataset()
         return_dict = {f'ch_{i + 1}': self._dataset[frame, i, :] for i in range(self._num_channels)}
         return_dict_rois = {chanroi: self._roi_data[chanroi][frame] for chanroi in self.chanrois}
