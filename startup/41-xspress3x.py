@@ -68,18 +68,28 @@ class QASXspress3XDetector(CommunityXspress3_8Channel):
     def __init__(self, prefix, *, configuration_attrs=None, read_attrs=None, **kwargs):
         if configuration_attrs is None:
             configuration_attrs = ["external_trig", "total_points", "spectra_per_point", "cam", "rewindable"]
+
+        # for chn in range(8):
+        #     for roin in range(4):
+        #         configuration_attrs.append(f'xsx_channel{chn:02d}_mcaroi{roin:02d}_min_x')
+        #         configuration_attrs.append(f'xsx_channel{chn:02d}_mcaroi{roin:02d}_size_x')
+
         super().__init__(prefix, configuration_attrs=configuration_attrs, read_attrs=read_attrs, **kwargs)
+
         for channel in self.iterate_channels():
-            channel.kind = "Hinted"
+            channel.kind = 7
             for mcaroi in channel.iterate_mcarois():
                 mcaroi.kind = "Hinted"
                 mcaroi.total_rbv.kind = "Hinted"
+                mcaroi.min_x.kind = 'Config'
+                mcaroi.size_x.kind = 'Config'
         self._asset_docs_cache = deque()
         self._datum_counter = None
         self._datum_ids = []
 
 
 class QASXspress3XDetectorStream(QASXspress3XDetector):
+    hints = None
 
     def stage(self, acq_rate, traj_time, *args, **kwargs):
         self.hdf5.file_write_mode.put(2)  # put it to Stream |||| IS ALREADY STREAMING
@@ -164,6 +174,8 @@ xsx = QASXspress3XDetector('XF:07BM-ES{Xsp:2}:', name='xsx')
 xsx_stream = QASXspress3XDetectorStream('XF:07BM-ES{Xsp:2}:', name='xsx_stream')
 
 
+xsx_stream.hints = {'fields': []}
+
 # from itertools import product
 # import pandas as pd
 from databroker.assets.handlers import HandlerBase, Xspress3HDF5Handler
@@ -180,41 +192,33 @@ from databroker.assets.handlers import HandlerBase, Xspress3HDF5Handler
 
 class QASXspress3XHDF5Handler(Xspress3HDF5Handler):
     HANDLER_NAME = "XSP3X"
+    XRF_DATA_KEY = "entry/instrument/detector/data"
     def __init__(self, *args, **kwargs):
+        print("Handler init kwargs", kwargs)
         super().__init__(*args, **kwargs)
-    #     self._roi_data = None
-    #     self._num_channels = None
-    #
-    # def _get_dataset(
-    #         self):  # readpout of the following stuff should be done only once, this is why I redefined _get_dataset method - Denis Leshchev Feb 9, 2021
-    #     # dealing with parent
-    #     super()._get_dataset()
-    #
-    #     # finding number of channels
-    #     if self._num_channels is not None:
-    #         return
-    #     print('determening number of channels')
-    #     shape = self.dataset.shape
-    #     if len(shape) != 3:
-    #         raise RuntimeError(f'The ndim of the dataset is not 3, but {len(shape)}')
-    #     self._num_channels = shape[1]
-    #
-    #     if self._roi_data is not None:
-    #         return
-    #     print('reading ROI data')
-    #     self.chanrois = [f'CHAN{c}ROI{r}' for c, r in product([1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4])]
-    #     # _data_columns = [self._file['/entry/instrument/detector/NDAttributes'][chanroi][()] for chanroi in
-    #     #                  self.chanrois]
-    #     # data_columns = np.vstack(_data_columns).T
-    #     data_columns = np.sum(self._file['/entry/instrument/detector/data'], axis=2)
-    #     self._roi_data = pd.DataFrame(data_columns, columns=self.chanrois)
+        # self._filepath = filepath
 
-    def __call__(self, *args, frame=None, **kwargs):
-        print("XSP3X handler called")
+    def _get_dataset(self):
+        if hasattr(self, '_num_images') and self._num_images is not None:
+            # print("No more data to return")
+            return
+        arr_data = np.asarray(self._file[self.XRF_DATA_KEY])
+        shape = arr_data.shape
+        self._num_images = shape[1]
+        self._array_data = arr_data
+
+    def __call__(self, **kwargs):
+        # print("XSX handler called")
         self._get_dataset()
-        return_dict = {f'ch_{i + 1}': self._dataset[frame, i, :] for i in range(self._num_channels)}
-        return_dict_rois = {chanroi: self._roi_data[chanroi][frame] for chanroi in self.chanrois}
-        return {**return_dict, **return_dict_rois}
+        frame_number = kwargs.get('frame')
+        if frame_number is None:
+            return
+        # print(kwargs)
+        # print(self._file)
+        # with h5py.File(self._file, "r") as f:
+        # arr_data = np.asarray(self._file[self.XRF_DATA_KEY])
+        # print(arr_data.shape)
+        return self._array_data[frame_number, :, :]
 
 
 # heavy-weight file handler

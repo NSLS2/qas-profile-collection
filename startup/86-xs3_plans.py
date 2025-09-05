@@ -134,4 +134,9 @@ def execute_trajectory_xsx(name, **metadata):
                          hutch='b',
                          **metadata)
     md['aux_detector'] = 'XSpress3x'
-    yield from bp.fly([flyer_xsx], md=md)
+    roi_signals = []
+    for channel in flyer_xsx.xs_det.iterate_channels():
+        for roin in channel.iterate_mcarois():
+            roi_signals.append(roin.min_x)
+            roi_signals.append(roin.size_x)
+    yield from bpp.baseline_wrapper(bp.fly([flyer_xsx], md=md), roi_signals)
