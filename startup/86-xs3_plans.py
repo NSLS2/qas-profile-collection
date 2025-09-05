@@ -65,7 +65,7 @@ class FlyerXS(FlyerAPBwithTrigger):
         # print('---------------------------------In complete--------------------------------------')
         st_super = super().complete()
         def callback_xs(value, old_value, **kwargs):
-            print("XS3X callback", value, old_value)
+            # print("XS3X callback", value, old_value)
             if int(round(old_value)) == 1 and int(round(value)) == 0:
                 # print("XS3 is about to complete")
                 self.xs_det.complete()
