@@ -46,7 +46,7 @@ class FlyerAPB:
             pb.kickoff().wait()
             print(f"energy = {mono1.energy.get()}")
 
-        def callback(value, old_value, **kwargs):
+        def callback(*, value, old_value, **kwargs):
 
             if int(round(old_value)) == 0 and int(round(value)) == 1:
                 # Now start mono move
@@ -87,28 +87,34 @@ class FlyerAPB:
             # self.det.stream.set(0)
 
             self.stop()
+
+
         # print("Waiting for the motor")
         self._motor_status.add_callback(callback_motor)
-        # print(self._motor_status)
-        # return_status = streaming_st and self._motor_status
-        # print("FLY STATUS APB_FLY", return_status, streaming_st, self._motor_status)
 
-        return streaming_st and self._motor_status
+
+        # print(self._motor_status)
+        return_status = streaming_st and self._motor_status
+        det_sts = self.det.complete()
+        for pb in self.pbs:
+            print("Completing", pb.name)
+            return_status = return_status and pb.complete()
+
+        print("FLY STATUS APB_FLY", return_status, streaming_st, self._motor_status)
+
+        return return_status and det_sts # streaming_st and self._motor_status
 
     def stop(self):
         self.det.stream.set(0).wait()
         print(f"\n!!! In stop: before det.complete()")
         # ttime.sleep(1)
-        self.det.complete().wait()
+        # self.det.complete().wait()
+        # ttime.sleep(1)
         print(f"\n!!! In stop: after det.complete()")
-        self.det.unstage()
+        # self.det.unstage()
         print("Detector unstaged")
 
-        for pb in self.pbs:
-            print("Completing", pb.name)
-            pb.complete().wait()
-            print("Unstaging", pb.name)
-            pb.unstage()
+
 
         print("PBs unstaged")
 
@@ -126,7 +132,6 @@ class FlyerAPB:
             yield from pb.collect_asset_docs()
 
     def collect(self):
-
         def collect_all():
             for pb in self.pbs:
                 yield from pb.collect()

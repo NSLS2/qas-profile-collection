@@ -128,9 +128,9 @@ class AnalogPizzaBox(Device):
     trig_source = Cpt(EpicsSignal, 'Machine:Clk-SP')
 
     filename_bin = Cpt(EpicsSignal, 'FA:Stream:Bin:File-SP')
-    filebin_status = Cpt(EpicsSignal, 'FA:Stream:Bin:File:Status-I')
+    filebin_status = Cpt(EpicsSignal, 'FA:Stream:Bin:File:Status-I', kind=Kind.omitted)
     filename_txt = Cpt(EpicsSignal, 'FA:Stream:Txt:File-SP')
-    filetxt_status = Cpt(EpicsSignal, 'FA:Stream:Txt:File:Status-I')
+    filetxt_status = Cpt(EpicsSignal, 'FA:Stream:Txt:File:Status-I', kind=Kind.omitted)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -202,7 +202,7 @@ class AnalogPizzaBoxAverage(AnalogPizzaBox):
         ):
         year = str(dt.datetime.now().year + year_offset)
 
-        def callback_saving(value, old_value, **kwargs):
+        def callback_saving(*, value, old_value, **kwargs):
             # print(f'     !!!!! {datetime.now()} callback_saving\n{value} --> {old_value}')
             if old_value == 0 and value == 1:
                 # print(f'     !!!!! {datetime.now()} callback_saving')
@@ -234,6 +234,10 @@ class AnalogPizzaBoxAverage(AnalogPizzaBox):
 # apb_ave = AnalogPizzaBoxAverage(prefix="XF:07BMB-CT{PBA:1}:", name="apb_ave")
 # apb_ave_c = AnalogPizzaBoxAverage(prefix="XF:07BMC-CT{PBA:1}:", name="apb_ave_c")
 
+class VerboseSS(SubscriptionStatus):
+    def check_value(self, *args, **kwargs):
+        print('CALLback triggered!' )
+        return super().check_value(*args, **kwargs)
 
 class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
 
@@ -309,26 +313,28 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         print(f"In complete of {self.name}")
         from datetime import datetime
 
-        def callback_saving(*, old_value, value, **kwargs):
+        def callback(*, old_value, value, **kwargs):
             print(f'     !!!!! {datetime.now()} callback_saving\n{old_value=} --> {value=}\n           {kwargs = }')
             # breakpoint()
+            # print(f'     !!!!! {datetime.now()} callback_saving\n{old_value=} --> {value=}\n')
             if old_value == 0 and value == 1:
-                print(f'     !!!!! {datetime.now()} callback_saving: {old_value=} --> {value=}')
+                # print(f'     !!!!! {datetime.now()} callback_saving: {old_value=} --> {value=}')
                 return True
             else:
                 return False
-        filebin_st = SubscriptionStatus(self.filebin_status, callback_saving, run=False)
-        filetxt_st = SubscriptionStatus(self.filetxt_status, callback_saving, run=False)
 
-        # breakpoint()
+        filebin_st = VerboseSS(self.filebin_status, callback, run=False)
+        filetxt_st = VerboseSS(self.filetxt_status, callback, run=False)
 
         self._datum_ids = []
+
         datum_id = '{}/{}'.format(self._resource_uid, next(self._datum_counter))
         datum = {'resource': self._resource_uid,
                  'datum_kwargs': {},
                  'datum_id': datum_id}
         self._asset_docs_cache.append(('datum', datum))
         self._datum_ids.append(datum_id)
+        print(f"at end of complete in {self.name}")
         return filebin_st and filetxt_st
 
     def collect(self):
