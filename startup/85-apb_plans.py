@@ -85,7 +85,8 @@ class FlyerAPB:
             # TODO: see if this 'set' is still needed (also called in self.det.unstage()).
             # Change it to 'put' to have a blocking call.
             # self.det.stream.set(0)
-
+            for pb in self.pbs:
+                pb.ignore_sel.set(1)
             self.stop()
 
 
@@ -94,15 +95,17 @@ class FlyerAPB:
 
 
         # print(self._motor_status)
-        return_status = streaming_st and self._motor_status
+        return_status = streaming_st & self._motor_status
+
         det_sts = self.det.complete()
+
         for pb in self.pbs:
             print("Completing", pb.name)
-            return_status = return_status and pb.complete()
+            return_status = return_status & pb.complete()
 
         print("FLY STATUS APB_FLY", return_status, streaming_st, self._motor_status)
 
-        return return_status and det_sts # streaming_st and self._motor_status
+        return return_status & det_sts # streaming_st and self._motor_status
 
     def stop(self):
         self.det.stream.set(0).wait()

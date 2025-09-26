@@ -318,7 +318,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
             # breakpoint()
             # print(f'     !!!!! {datetime.now()} callback_saving\n{old_value=} --> {value=}\n')
             if old_value == 0 and value == 1:
-                # print(f'     !!!!! {datetime.now()} callback_saving: {old_value=} --> {value=}')
+                print(f'     !!!!! {datetime.now()} callback_saving: {old_value=} --> {value=}')
                 return True
             else:
                 return False
@@ -335,7 +335,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         self._asset_docs_cache.append(('datum', datum))
         self._datum_ids.append(datum_id)
         print(f"at end of complete in {self.name}")
-        return filebin_st and filetxt_st
+        return filebin_st & filetxt_st
 
     def collect(self):
         # self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
