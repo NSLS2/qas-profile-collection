@@ -87,19 +87,34 @@ class QASXspress3XDetector(CommunityXspress3_8Channel):
         self._datum_counter = None
         self._datum_ids = []
 
+        self.cam.acquire.put(0)
+        self.cam.trigger_mode.put(1)  # put the trigger mode to internal
+        self.cam.num_images.put(1)
+        self.cam.acquire_time.put(1)
+        self.cam.erase.put(1)
+
+    def stage(self, *args, **kwargs):
+        self.cam.acquire.put(0)
+        self.cam.erase.put(1)
+        self.cam.trigger_mode.put(1)
+        self.cam.num_images.put(1)
+        self.cam.acquire_time.put(1)
+        super().stage(*args, **kwargs)
 
 class QASXspress3XDetectorStream(QASXspress3XDetector):
     hints = None
 
     def stage(self, acq_rate, traj_time, *args, **kwargs):
+
         self.hdf5.file_write_mode.put(2)  # put it to Stream |||| IS ALREADY STREAMING
         self.external_trig.put(True)
         self.set_expected_number_of_points(acq_rate, traj_time)
         self.spectra_per_point.put(1)
-        self.cam.trigger_mode.put(3)  # put the trigger mode to TTL in
-        self.cam.erase.put(1)
-
         super().stage(*args, **kwargs)
+
+        self.cam.trigger_mode.put(3)  # put the trigger mode to TTL in
+        # self.cam.erase.put(1)
+
         self.hdf5._resource['spec'] = "XSP3X"
         self._datum_counter = itertools.count()
         # note, hdf5 is already capturing at this point
@@ -108,6 +123,11 @@ class QASXspress3XDetectorStream(QASXspress3XDetector):
 
     def unstage(self):
         self.hdf5.capture.put(0)
+        self.cam.acquire.put(0)
+        self.cam.trigger_mode.put(1)  # put the trigger mode to internal
+        self.cam.num_images.put(1)
+        self.cam.acquire_time.put(1)
+        self.cam.erase.put(1)
         super().unstage()
         self._datum_counter = None
 

@@ -1,7 +1,14 @@
 def general_scan_plan(detectors, motor, rel_start, rel_stop, num):
-    plan = bp.relative_scan(detectors, motor, rel_start, rel_stop, num, md={'experiment':'general_scan'})
+
+    name = f"{motor.name}"
+
+    interp_fn = f"{ROOT_PATH}/{USER_FILEPATH}/{RE.md['year']}/{RE.md['cycle']}/{RE.md['PROPOSAL']}/{name}.dat"
+
+    plan = bp.relative_scan(detectors, motor, rel_start, rel_stop, num, md={'experiment': 'general_scan', 'interp_filename': interp_fn})
 
     if detectors[0].name == 'xs' or detectors[0].name == "pilatus" or detectors[0].name == "xsx":
+        if detectors[0].name == 'xsx':
+            detectors[0].cam.erase.put(1)
         plan = plan
     elif hasattr(detectors[0], 'kickoff'):
         plan = bpp.fly_during_wrapper(plan, detectors)
