@@ -57,6 +57,7 @@ class FlyerXS(FlyerAPBwithTrigger):
         traj_duration = get_traj_duration()
         acq_rate = self.trigger.freq.get()
         self.xs_det.stage(acq_rate, traj_duration)
+        ttime.sleep(1)
         st_super = super().kickoff(traj_duration=traj_duration)
         # print('---------------------------------Kickoff complete--------------------------------------')
         return st_super

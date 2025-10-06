@@ -94,19 +94,19 @@ class QASXspress3XDetector(CommunityXspress3_8Channel):
         self.cam.erase.put(1)
 
     def stage(self, *args, **kwargs):
-        self.cam.acquire.put(0)
-        self.cam.erase.put(1)
+        self.cam.acquire.put(0, wait=True)
+        self.cam.erase.put(1, wait=True)
         self.cam.trigger_mode.put(1)
         self.cam.num_images.put(1)
-        self.cam.acquire_time.put(1)
+        self.cam.acquire_time.put(1, wait=True)
         super().stage(*args, **kwargs)
 
     def unstage(self, *args, **kwargs):
-        self.cam.acquire.put(0)
+        self.cam.acquire.put(0, wait=True)
         self.cam.trigger_mode.put(1)  # put the trigger mode to internal
         self.cam.num_images.put(1)
         self.cam.acquire_time.put(1)
-        self.cam.erase.put(1)
+        self.cam.erase.put(1, wait=True)
         super().unstage(*args, **kwargs)
 
 class QASXspress3XDetectorStream(QASXspress3XDetector):
