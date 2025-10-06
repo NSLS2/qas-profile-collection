@@ -117,10 +117,6 @@ class FlyerAPB:
         # self.det.unstage()
         print("Detector unstaged")
 
-
-
-        print("PBs unstaged")
-
     def describe_collect(self):
         return_dict = self.det.describe_collect()
         # Also do it for all pizza-boxes
