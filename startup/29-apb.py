@@ -329,7 +329,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
                  'datum_id': datum_id}
         self._asset_docs_cache.append(('datum', datum))
         self._datum_ids.append(datum_id)
-        return filebin_st and filetxt_st
+        return filebin_st & filetxt_st
 
     def collect(self):
         # self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
