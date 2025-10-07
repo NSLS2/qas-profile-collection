@@ -249,7 +249,9 @@ def unstage_staged_devices():
                'xs': xs,
                'pb1.enc1': pb1.enc1,
                'xs_stream': xs_stream,
-               'apb_trigger': apb_trigger}
+               'apb_trigger': apb_trigger,
+               'xsx':xsx,
+               'xsx_stream':xsx_stream}
 
     for name, device in devices.items():
         status = device._staged.value

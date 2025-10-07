@@ -272,7 +272,6 @@ class QASXspress3Detector(XspressTrigger, Xspress3Detector):
 
 xs = QASXspress3Detector('XF:07BMB-ES{Xsp:1}:', name='xs')
 
-
 def initialize_Xspress3(xs, hdf5_warmup=True):
     # TODO: do not put on startup or do it conditionally, if on beamline.
     xs.channel2.vis_enabled.put(1)
@@ -377,6 +376,7 @@ class QASXspress3DetectorStream(QASXspress3Detector):
 
     def collect_asset_docs(self):
         items = list(self._asset_docs_cache)
+        # print("items", items)
         self._asset_docs_cache.clear()
         for item in items:
             yield item
@@ -405,7 +405,7 @@ class QASXspress3HDF5Handler(Xspress3HDF5Handler):
         # finding number of channels
         if self._num_channels is not None:
             return
-        print('determening number of channels')
+        print('Determining number of channels')
         shape = self.dataset.shape
         if len(shape) != 3:
             raise RuntimeError(f'The ndim of the dataset is not 3, but {len(shape)}')
@@ -421,6 +421,7 @@ class QASXspress3HDF5Handler(Xspress3HDF5Handler):
         self._roi_data = pd.DataFrame(data_columns, columns=self.chanrois)
 
     def __call__(self, *args, frame=None, **kwargs):
+        # print("XS3 Handler called")
         self._get_dataset()
         return_dict = {f'ch_{i + 1}': self._dataset[frame, i, :] for i in range(self._num_channels)}
         return_dict_rois = {chanroi: self._roi_data[chanroi][frame] for chanroi in self.chanrois}

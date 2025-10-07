@@ -38,7 +38,7 @@ class FlyerAPB:
         #         print(colored(msg.format("", ""), "green"), file=sys.stdout, flush=True)
 
         # Staging analog detector:
-        self.det.stage()
+        self.det.stage(**kwargs)
 
         # Staging all encoder detectors:
         for pb in self.pbs:
@@ -87,8 +87,12 @@ class FlyerAPB:
             # self.det.stream.set(0)
 
             self.stop()
-
+        # print("Waiting for the motor")
         self._motor_status.add_callback(callback_motor)
+        # print(self._motor_status)
+        # return_status = streaming_st and self._motor_status
+        # print("FLY STATUS APB_FLY", return_status, streaming_st, self._motor_status)
+
         return streaming_st and self._motor_status
 
     def stop(self):
@@ -98,10 +102,15 @@ class FlyerAPB:
         self.det.complete().wait()
         print(f"\n!!! In stop: after det.complete()")
         self.det.unstage()
+        print("Detector unstaged")
 
         for pb in self.pbs:
+            print("Completing", pb.name)
             pb.complete().wait()
+            print("Unstaging", pb.name)
             pb.unstage()
+
+        print("PBs unstaged")
 
     def describe_collect(self):
         return_dict = self.det.describe_collect()

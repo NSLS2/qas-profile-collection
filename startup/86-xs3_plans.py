@@ -13,13 +13,16 @@ class FlyerAPBwithTrigger(FlyerAPB):
 
     def kickoff(self, traj_duration=None):
         self.trigger.stage()
-        st_super = super().kickoff(traj_duration=traj_duration)
+        st_super = super().kickoff()
         return st_super
 
     def complete(self):
+        print("APBwTrigger COMPLETE")
         st_super = super().complete()
         def callback_motor(status):
             self.trigger.complete()
+            print("TRIGGER COMPLETE")
+            # self.trigger.unstage()
 
         self._motor_status.add_callback(callback_motor)
         return st_super & self._motor_status #& st_xs
@@ -54,6 +57,7 @@ class FlyerXS(FlyerAPBwithTrigger):
         traj_duration = get_traj_duration()
         acq_rate = self.trigger.freq.get()
         self.xs_det.stage(acq_rate, traj_duration)
+        ttime.sleep(1)
         st_super = super().kickoff(traj_duration=traj_duration)
         # print('---------------------------------Kickoff complete--------------------------------------')
         return st_super
@@ -62,14 +66,18 @@ class FlyerXS(FlyerAPBwithTrigger):
         # print('---------------------------------In complete--------------------------------------')
         st_super = super().complete()
         def callback_xs(value, old_value, **kwargs):
+            # print("XS3X callback", value, old_value)
             if int(round(old_value)) == 1 and int(round(value)) == 0:
+                # print("XS3 is about to complete")
                 self.xs_det.complete()
+                # print("Now XS3 stream is complete")
                 return True
             else:
                 return False
 
         saving_st = SubscriptionStatus(self.xs_det.hdf5.capture, callback_xs)
         # print('---------------------------------Complete finished--------------------------------------')
+        # print(st_super & saving_st)
         return st_super & saving_st
 
     def describe_collect(self):
@@ -127,4 +135,9 @@ def execute_trajectory_xsx(name, **metadata):
                          hutch='b',
                          **metadata)
     md['aux_detector'] = 'XSpress3x'
-    yield from bp.fly([flyer_xsx], md=md)
+    roi_signals = []
+    for channel in flyer_xsx.xs_det.iterate_channels():
+        for roin in channel.iterate_mcarois():
+            roi_signals.append(roin.min_x)
+            roi_signals.append(roin.size_x)
+    yield from bpp.baseline_wrapper(bp.fly([flyer_xsx], md=md), roi_signals)

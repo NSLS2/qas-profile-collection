@@ -42,15 +42,14 @@ detector_dictionary = {#colmirror_diag.name: {'obj': colmirror_diag, 'elements':
                                                                      'xs_channel6_rois_roi01_value',
                                                                      'xs_channel6_rois_roi04_value']},
                     'pilatus': {'device': pilatus, 'channels': ['pilatus_stats1_total']},
-                    'xspress3x Hutch B' : {'device': xsx, 'channels': ['xsx_channel1_rois_roi01_value',
-                                                                       'xsx_channel2_rois_roi01_value',
-                                                                       'xsx_channel3_rois_roi01_value',
-                                                                       'xsx_channel4_rois_roi01_value',
-                                                                       'xsx_channel5_rois_roi01_value',
-                                                                       'xsx_channel6_rois_roi01_value',
-                                                                       'xsx_channel7_rois_roi01_value',
-                                                                       'xsx_channel8_rois_roi01_value',
-                                                                       'xsx_channel6_rois_roi04_value']}
+                    'xspress3x Hutch B' : {'device': xsx, 'channels': [f'xsx_channel{ch+1:02d}_mcaroi01_total_rbv' for ch in range(8)]}
+                                                                       # 'xsx_channel3_rois_roi01_value',
+                                                                       # 'xsx_channel4_rois_roi01_value',
+                                                                       # 'xsx_channel5_rois_roi01_value',
+                                                                       # 'xsx_channel6_rois_roi01_value',
+                                                                       # 'xsx_channel7_rois_roi01_value',
+                                                                       # 'xsx_channel8_rois_roi01_value',
+                                                                       # 'xsx_channel6_rois_roi04_value']}
 
 
 }
@@ -132,7 +131,7 @@ plan_funcs = {
 for shutter in shutters_dictionary.values():
     shutter.status.wait_for_connection()
 
-raise RuntimeError()
+# raise RuntimeError()
 
 ipython = get_ipython()
 if ipython is not None:
@@ -157,6 +156,7 @@ xlive_gui = isstools.xlive.XliveGui(plan_funcs=plan_funcs,
                                     accelerator=nsls_ii,
                                     mono=mono1,
                                     sdd = xs,
+                                    xspress3x=xsx,
                                     pe1 = pilatus, # xs or None # put back to get xs back or opt out!
                                     shutters_dict=shutters_dictionary,
                                     det_dict=detector_dictionary,

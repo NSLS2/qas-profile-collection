@@ -10,6 +10,7 @@ import sys
 import psutil
 import subprocess
 from pathlib import Path
+from packaging import version
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -68,6 +69,8 @@ if len(bsui_processes) > 1:
 
 import ophyd
 
+is_new_env = version.parse(ophyd.__version__) > version.parse('1.8.0')  # may need to compare bsky version
+
 GLOBAL_TIMEOUT = 60
 
 ophyd.signal.EpicsSignalBase.set_defaults(timeout=GLOBAL_TIMEOUT, connection_timeout=GLOBAL_TIMEOUT)
@@ -81,9 +84,16 @@ from databroker.v0 import Broker #Old data broker 2025-August-21
 # from databroker import Broker
 db = Broker.named(beamline_id)
 
+def patched_insert(name, doc):
+    if name == 'event_page':
+        for e_doc in event_model.unpack_event_page(doc):
+            db.insert('event', e_doc)
+    else:
+        db.insert(name, doc)
+
 nslsii.configure_base(
     get_ipython().user_ns, 
-    db,
+    None if is_new_env else db,
     # broker_name=beamline_id, 
     bec=False, 
     pbar=False,
@@ -91,7 +101,8 @@ nslsii.configure_base(
     # redis_url = "info.qas.nsls2.bnl.gov"
     )
 # nslsii.configure_kafka_publisher(RE, 'qas')
-
+if is_new_env:
+    RE.subscribe(patched_insert)
 import redis
 from redis_json_dict import RedisJSONDict
 RE.md = RedisJSONDict(redis.Redis("info.qas.nsls2.bnl.gov", 6379), prefix="")
