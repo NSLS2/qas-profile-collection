@@ -76,41 +76,28 @@ class FlyerAPB:
         streaming_st = SubscriptionStatus(self.det.streaming, callback_det, run=False)
 
         def callback_motor(status):
-            # print(f'!!!! {datetime.now()} callback_motor')
-
-            # print('      I am sleeping for 10 seconds')
-            # ttime.sleep(10.0)
             # print('      Done sleeping for 10 seconds')
 
             # TODO: see if this 'set' is still needed (also called in self.det.unstage()).
             # Change it to 'put' to have a blocking call.
             # self.det.stream.set(0)
 
+            for pb in self.pbs:
+                pb.ignore_sel.set(1)
             self.stop()
         # print("Waiting for the motor")
         self._motor_status.add_callback(callback_motor)
-        # print(self._motor_status)
-        # return_status = streaming_st and self._motor_status
-        # print("FLY STATUS APB_FLY", return_status, streaming_st, self._motor_status)
 
-        return streaming_st and self._motor_status
+        return_status = streaming_st and self._motor_status
+        det_sts = self.det.complete()
+        for pb in self.pbs:
+            print("Completing", pb.name)
+            return_status = return_status & pb.complete()
+
+        return return_status & det_sts
 
     def stop(self):
         self.det.stream.set(0).wait()
-        print(f"\n!!! In stop: before det.complete()")
-        # ttime.sleep(1)
-        self.det.complete().wait()
-        print(f"\n!!! In stop: after det.complete()")
-        self.det.unstage()
-        print("Detector unstaged")
-
-        for pb in self.pbs:
-            print("Completing", pb.name)
-            pb.complete().wait()
-            print("Unstaging", pb.name)
-            pb.unstage()
-
-        print("PBs unstaged")
 
     def describe_collect(self):
         return_dict = self.det.describe_collect()
@@ -126,11 +113,18 @@ class FlyerAPB:
             yield from pb.collect_asset_docs()
 
     def collect(self):
-
         def collect_all():
             for pb in self.pbs:
                 yield from pb.collect()
             yield from self.det.collect()
+
+        # This is not a recommended way to unstage devices. It's only here for compatibility
+        self.det.unstage()
+        print("Detector unstaged")
+        for pb in self.pbs:
+            print("Unstaging", pb.name)
+            pb.unstage()
+
         print(f'-------------- FLYER APB collect is being returned------------- ({ttime.ctime(ttime.time())})')
         return collect_all()
 

@@ -4,6 +4,7 @@ print(__file__)
 import faulthandler
 from pprint import pprint, pformat
 faulthandler.enable()
+import event_model
 
 import appdirs
 import sys

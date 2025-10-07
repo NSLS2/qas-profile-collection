@@ -398,7 +398,7 @@ class EncoderFS(Encoder):
         st = SubscriptionStatus(self.ignore_rb, callback, run=False)
 
         # Stop adding new data to the file.
-        st_sel = self.ignore_sel.set(1)
+        # st_sel = self.ignore_sel.set(1)
 
         # HACK: Make datum documents here so that they are available for collect_asset_docs
         # before collect() is called. May need changes to RE to do this properly. - Dan A.
@@ -413,7 +413,7 @@ class EncoderFS(Encoder):
 
         self._datum_ids.append(datum_id)
 
-        return st and st_sel
+        return st # and st_sel
 
     def collect(self):
         """
