@@ -6,7 +6,6 @@ from ophyd.status import SubscriptionStatus
 from termcolor import colored
 import bluesky.plans as bp
 
-
 class LustreNotConnectedError(Exception):
     ...
 
@@ -114,8 +113,6 @@ class FlyerAPB:
         # self.det.complete().wait()
         # ttime.sleep(1)
         print(f"\n!!! In stop: after det.complete()")
-        # self.det.unstage()
-        print("Detector unstaged")
 
     def describe_collect(self):
         return_dict = self.det.describe_collect()
@@ -135,9 +132,16 @@ class FlyerAPB:
             for pb in self.pbs:
                 yield from pb.collect()
             yield from self.det.collect()
+
+        # This is not a recommended way to unstage devices. It's only here for compatibility
+        self.det.unstage()
+        print("Detector unstaged")
+        for pb in self.pbs:
+            print("Unstaging", pb.name)
+            pb.unstage()
+
         print(f'-------------- FLYER APB collect is being returned------------- ({ttime.ctime(ttime.time())})')
         return collect_all()
-
 
 flyer_apb = FlyerAPB(det=apb_stream, pbs=[pb1.enc1], motor=mono1)
 flyer_apb_c = FlyerAPB(det=apb_stream_c, pbs=[pb1.enc1], motor=mono1)
@@ -301,6 +305,7 @@ def execute_trajectory_apb(name, **metadata):
                          hutch='b',
                          **metadata)
     yield from bp.fly([flyer_apb], md=md)
+    # yield from bps.unstage(flyer_apb)
     # yield from custom_fly([flyer_apb], md=md)
 
 
@@ -313,7 +318,7 @@ def execute_trajectory_apb_c(name, **metadata):
                          hutch='c',
                          **metadata)
     yield from bp.fly([flyer_apb_c], md=md)    
-
+    # yield from bps.unstage(flyer_apb_c)
 
 def custom_fly(flyers, *, md=None):
     """

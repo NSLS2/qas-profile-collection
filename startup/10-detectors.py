@@ -360,6 +360,7 @@ class EncoderFS(Encoder):
 
 
     def unstage(self):
+        # print("Called pb unstaging. Connection status:", self.connected)
         if self.connected:
             self.ignore_sel.set(1).wait()
             self._datum_counter = None
