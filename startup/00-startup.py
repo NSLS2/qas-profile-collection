@@ -257,4 +257,27 @@ def print_docs(name, doc):
     print(f"{doc = }")
     print("====================== Done ==================")
 
+
+class FileLoadingTimer:
+
+    def __init__(self):
+        self.start_time = 0
+        self.loading = False
+
+    def start_timer(self, filename):
+        if self.loading:
+            raise Exception("File already loading!")
+
+        print(f"Loading {filename}...")
+        self.start_time = ttime.time()
+        self.loading = True
+
+    def stop_timer(self, filename):
+
+        elapsed = ttime.time() - self.start_time
+        print(f"Done loading {filename} in {elapsed} seconds.")
+        self.loading = False
+
+file_loading_timer = FileLoadingTimer()
+
 #RE.subscribe(print_docs)

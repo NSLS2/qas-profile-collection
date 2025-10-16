@@ -17,9 +17,11 @@ file_loading_timer.start_timer(__file__)
 
 import dataclasses
 import uuid
+import pathlib
 
 from ophyd_async.core import UUIDFilenameProvider, YMDPathProvider
 
+TST_PROPOSAL_DIR_ROOT = "/nsls2/data/qas-new/legacy/panda_tst/"
 
 class ProposalNumYMDPathProvider(YMDPathProvider):
 
@@ -27,7 +29,7 @@ class ProposalNumYMDPathProvider(YMDPathProvider):
         self,
         filename_provider,
         device_above_ymd=True,
-        base_directory_path=TST_PROPOSAL_DIR_ROOT,
+        base_directory_path=pathlib.PurePath(TST_PROPOSAL_DIR_ROOT),
     ):
 
         super().__init__(
@@ -44,7 +46,7 @@ class ProposalNumYMDPathProvider(YMDPathProvider):
 
         # Hard code cycle/proposal for now
         proposal_assets = (
-            self._base_directory_path / "2025-1" / "pass-000000" / "assets" / "fly"
+            self._base_directory_path # / "2025-1" / "pass-000000" / "assets" / "fly"
             # Path("/tmp") / "2025-1" / "pass-000000" / "assets" / "fly"
         )
 
@@ -62,40 +64,19 @@ class ProposalNumYMDPathProvider(YMDPathProvider):
         return retval
 
 
-# class ScanIDDirectoryProvider(UUIDDirectoryProvider):
-#     def __init__(self, *args, frame_type: FrameType = FrameType.scan, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self._frame_type = frame_type
-
-#     def __call__(self):
-#         resource_dir = Path(f"scan_{RE.md['scan_id']:05d}_dark_flat")
-#         prefix = f"{self._frame_type.value}_{uuid.uuid4()}"
-
-#         if self._frame_type == FrameType.scan:
-#             resource_dir = Path(f"scan_{RE.md['scan_id']:05d}")
-#             prefix = f"{uuid.uuid4()}"
-
-#         proposal_assets = Path(self._directory_path, RE.md["cycle"], RE.md["proposal"], "assets")
-#         return DirectoryInfo(
-#             root=proposal_assets,
-#             resource_dir=resource_dir,
-#             prefix=prefix,
-#         )
-
-
 class ScanIDFilenameProvider(UUIDFilenameProvider):
     def __init__(
         self,
         *args,
-        frame_type: TomoFrameType = TomoFrameType.proj,
+        # frame_type: TomoFrameType = TomoFrameType.proj,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self._frame_type = frame_type
+        # self._frame_type = frame_type
         self._uuid_for_scan = None
 
-    def set_frame_type(self, new_frame_type: TomoFrameType):
-        self._frame_type = new_frame_type
+    # def set_frame_type(self, new_frame_type: TomoFrameType):
+    #     self._frame_type = new_frame_type
 
     def __call__(self, device_name=None):
         if self._uuid_for_scan is None:

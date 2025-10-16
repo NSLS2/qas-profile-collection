@@ -53,7 +53,7 @@ class Monochromator(Device):
     energy = Cpt(EpicsMotor, 'Mono:1-Ax:E}Mtr')
     pico = Cpt(EpicsMotor, 'Mono:1-Ax:Pico}Mtr')
     diag = Cpt(EpicsMotor, 'Mono:1-Ax:Diag}Mtr')
-
+    max_velocity = Cpt(EpicsSignal, 'Mono:1-Ax:Scan}Mtr.VMAX')
     main_motor_res = Cpt(EpicsSignal, 'Mono:1-Ax:Scan}Mtr.MRES')
 
     # The following are related to trajectory motion

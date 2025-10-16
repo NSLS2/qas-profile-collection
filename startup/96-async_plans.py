@@ -132,7 +132,8 @@ def simple_fly(
     destination_deg = end_deg + pre_start_deg        
     panda_stream_name = f"{panda.name}_stream"
     panda_trigger_info = TriggerInfo(
-        number_of_triggers=npoints,
+        # number_of_triggers=npoints,
+        number_of_events=npoints,
         livetime=clock_width_ms*0.001,
         deadtime=reset_time*0.001,
         trigger=DetectorTrigger.CONSTANT_GATE,
@@ -173,3 +174,5 @@ def simple_fly(
     panda_val = yield from bps.rd(panda.data.num_captured)
     print(f"{panda_val = }")
     yield from bps.mv(bragg_motor.velocity, current_velocity)
+
+file_loading_timer.stop_timer(__file__)

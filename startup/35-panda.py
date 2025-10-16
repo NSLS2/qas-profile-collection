@@ -105,12 +105,13 @@ class HDFPandaClock(
         )
 
 def instantiate_panda_async(panda_id):
-    print(f"Connecting to PandA #{panda_id}")
+    # print(f"Connecting to PandA #{panda_id}")
     with init_devices():
         panda_path_provider = ProposalNumYMDPathProvider(default_filename_provider)
         panda = HDFPandaClock(
             f"XF:07BM-ES{{PANDA:{panda_id}}}:",
             panda_path_provider,
+            # name="panda1",
             name=f"panda{panda_id}",
         )
     print("Done")
