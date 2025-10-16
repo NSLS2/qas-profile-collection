@@ -3,6 +3,10 @@ print(__file__)
 from ophyd import EpicsMotor as _EpicsMotor
 from ophyd import Device, Component as Cpt, EpicsSignal
 from ophyd.status import SubscriptionStatus
+from ophyd_async.epics.motor import Motor
+from ophyd_async.core import init_devices
+
+
 import time as ttime
 
 class EpicsMotorWithTweaking(_EpicsMotor):
@@ -274,3 +278,7 @@ class IonChamberY(Device):
     y = Cpt(EpicsMotor, '-Ax:Y}Mtr')
 
 hutchC_ic_motor = IonChamberY('XF:07BMC-OP{IONC:it', name='hutchC_ic_motor')
+
+with init_devices():
+    bragg_async = Motor('XF:07BMA-OP{Mono:1-Ax:Scan}Mtr', name='bragg_async')
+
