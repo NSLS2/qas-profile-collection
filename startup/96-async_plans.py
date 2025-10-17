@@ -133,7 +133,7 @@ def simple_fly(
     panda_stream_name = f"{panda.name}_stream"
     panda_trigger_info = TriggerInfo(
         # number_of_triggers=npoints,
-        number_of_events=npoints,
+        number_of_events=0,
         livetime=clock_width_ms*0.001,
         deadtime=reset_time*0.001,
         trigger=DetectorTrigger.CONSTANT_GATE,

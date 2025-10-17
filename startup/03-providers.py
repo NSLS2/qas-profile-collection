@@ -40,15 +40,15 @@ class ProposalNumYMDPathProvider(YMDPathProvider):
         )
 
     def __call__(self, device_name=None):
-        # proposal_assets = (
-        #     self._base_directory_path / RE.md["cycle"] / RE.md["data_session"] / "assets"
-        # )
+        proposal_assets = (
+            self._base_directory_path / f'{RE.md["year"]}-{RE.md["cycle"]}' / f'pass-{RE.md["PROPOSAL"]}' / "assets"
+        )
 
         # Hard code cycle/proposal for now
-        proposal_assets = (
-            self._base_directory_path # / "2025-1" / "pass-000000" / "assets" / "fly"
-            # Path("/tmp") / "2025-1" / "pass-000000" / "assets" / "fly"
-        )
+        # proposal_assets = (
+        #     self._base_directory_path / "2025-3" / "pass-000000" / "assets" / "fly"
+        #     # Path("/tmp") / "2025-1" / "pass-000000" / "assets" / "fly"
+        # )
 
         path_info = super().__call__(device_name=device_name)
 
