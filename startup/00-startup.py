@@ -13,6 +13,11 @@ import subprocess
 from pathlib import Path
 from packaging import version
 
+# if 'datetime' in globals():
+#     del globals()['datetime']
+
+# from datetime import datetime
+
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -29,8 +34,6 @@ log_file_format = (
 handler1.setFormatter(logging.Formatter(fmt=log_file_format))
 logger_open_files.addHandler(handler1)
 logger_open_files.propagate = False
-
-
 
 def time_now_str():
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
@@ -187,7 +190,14 @@ USER_FILEPATH = 'processed'
 RE.md['group'] = beamline_id
 RE.md['beamline_id'] = beamline_id.upper()
 RE.md['Facility'] = 'NSLS-II'
+RE.md['tiled_access_tags'] = ['qas_beamline']
 
+from tiled.client import from_uri
+from bluesky.callbacks.tiled_writer import TiledWriter
+tiled_client = from_uri("https://tiled.nsls2.bnl.gov",
+                       api_key=os.getenv("TILED_BLUESKY_WRITING_API_KEY_QAS"))['qas']['migration']
+tw = TiledWriter(tiled_client)
+RE.subscribe(tw)
 
 # RE.md['Mono_pulses_per_deg']=
 

@@ -46,7 +46,7 @@ def pilatus_serializer_factory(name, doc):
     # print(f">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>{doc = }>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     #
     # filename = '/nsls2/data/qas-new/legacy/processed/{year}/{cycle}/{PROPOSAL}Pilatus/test'.format(**doc)
-    import datetime
+    # from datetime import datetime
     serializer = Serializer(
         '/nsls2/data/qas-new/legacy/processed/{year}/{cycle}/{PROPOSAL}Pilatus'.format(**doc),
         file_prefix = (
