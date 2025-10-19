@@ -306,10 +306,9 @@ def panda_fly_traj(
     yield from bps.kickoff_all(*all_devices, wait=True)
 
     yield from bps.declare_stream(*all_detectors, name="xas_stream")
-    st = yield from bps.abs_set(mono1.start_trajectory, "1", wait=False)
+    yield from bps.abs_set(mono1.start_trajectory, "1", wait=True)
     yield from bps.collect_while_completing(
-        all_detectors, all_detectors, flush_period=0.25, stream_name="xas_stream",
-        watch=[st]
+        all_detectors, all_detectors, flush_period=0.25, stream_name="xas_stream"
     )
 
     yield from bps.unstage_all(*all_devices)
