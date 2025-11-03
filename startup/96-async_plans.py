@@ -51,6 +51,7 @@ def simple_fly(
     deadband=10,  # eV
     md=None,
     ):
+    t0 = ttime.time()
     _md = md or {}
     _md.update({"scan_duration": total_time, "scan_points_requested": npoints})
     offset = float(mono1.angle_offset.get())
@@ -103,15 +104,15 @@ def simple_fly(
 
     all_detectors = [panda]
     all_devices = [*all_detectors, bragg_async]   
-    yield from bps.mv(
-        bragg_motor.velocity, max_velocity
-    )  # Make it fast to move to the start position
+    # yield from bps.mv(
+        # bragg_motor.velocity, max_velocity
+    # )  # Make it fast to move to the start position
     print("Starting angle:", start_deg - pre_start_deg)
     # yield from bps.pause()
-    yield from bps.mv(bragg_motor, start_deg - pre_start_deg)
-    yield from bps.mv(
-        bragg_motor.velocity, target_velocity  # 180 / scan_time
-    )  # Set the velocity for the scan    
+    # yield from bps.mv(bragg_motor, start_deg - pre_start_deg)
+    # yield from bps.mv(
+        # bragg_motor.velocity, target_velocity  # 180 / scan_time
+    # )  # Set the velocity for the scan    
   
     yield from bps.mv(panda_pcomp1.enable, "ZERO")  # disabling pcomp, we'll enable it right before the start
     yield from bps.mv(panda_pcomp1.start, int(start_cnt))
@@ -124,10 +125,10 @@ def simple_fly(
     yield from bps.mv(panda_clock1.width, clock_width_ms)
     yield from bps.mv(panda_clock1.width_units, "ms")
 
-    yield from bps.mv(bragg_motor, start_deg - pre_start_deg)
-    yield from bps.mv(
-        bragg_motor.velocity, target_velocity  # 180 / scan_time
-    )  # Set the velocity for the scan
+    # yield from bps.mv(bragg_motor, start_deg - pre_start_deg)
+    # yield from bps.mv(
+        # bragg_motor.velocity, target_velocity  # 180 / scan_time
+    # )  # Set the velocity for the scan
 
     destination_deg = end_deg + pre_start_deg        
     panda_stream_name = f"{panda.name}_stream"
@@ -140,11 +141,11 @@ def simple_fly(
     )
 
     bragg_fly_info = FlyMotorInfo(
-        start_position=start_deg - pre_start_deg,
+        start_position=start_deg, # - pre_start_deg,
         end_position=destination_deg,
         time_for_move=total_time,
     )
-
+    t1 = ttime.time()
     yield from bps.open_run()
 
     # Stage All!
@@ -159,6 +160,7 @@ def simple_fly(
 
     yield from bps.mv(panda_pcomp1.enable, "ONE")
     yield from bps.wait(group="prepare_all")
+    t1a = ttime.time()
     yield from bps.kickoff_all(*all_devices, wait=True)
 
     yield from bps.declare_stream(*all_detectors, name="xas_stream")
@@ -169,11 +171,12 @@ def simple_fly(
     yield from bps.unstage_all(*all_devices)
 
     yield from bps.close_run()
-
+    t1b = time.time()
     yield from bps.mv(panda_pcomp1.enable, "ZERO")
     panda_val = yield from bps.rd(panda.data.num_captured)
     print(f"{panda_val = }")
     yield from bps.mv(bragg_motor.velocity, current_velocity)
+    print("Total scan time {:.2f}s, staging time {:.2f}s, fly time {:.2f}s".format(ttime.time()-t0, t1a-t1, t1b-t1a))
 
 def panda_fly_traj(
     panda,
