@@ -40,6 +40,7 @@ bluesky-tiled-plugins = ">=2.0.0b68"
 ophyd-async = { version = ">0.10.0", extras = ["ca", "pva"] }
 isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev = "1292723" }
 xas = { git = "https://github.com/nsls-ii-iss/xas" }
+pvxslibs = ">=1.3.2, <2"
 
 
 [feature.qs.dependencies]
