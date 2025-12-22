@@ -61,6 +61,12 @@ def patch_descriptor(doc):
         if ("xs_channel" in key) and (len(val["shape"]) != 3):
             val["shape"] = (1, 6, 4096)
 
+        for key, val in doc["data_keys"].items():
+            if ("external" not in val.keys()) \
+                and (val.get("dtype") == "array") \
+                and ("filename" in key):
+                raise NotImplementedError(f"Descriptor with external array data key {key} is not supported.")
+
     return doc
 
 def patch_datum(doc):
@@ -107,6 +113,10 @@ tw = TiledWriter(client = tiled_writing_client_sql,
                  spec_to_mimetype= {
                     "AD_HDF5": "application/x-hdf5",
                     "AD_HDF5_SWMR": "application/x-hdf5",
+                    "AD_HDF5_SWMR_STREAM": "application/x-hdf5",
+                    "AD_HDF5_SWMR_SLICE": "application/x-hdf5",
+                    "PIL100k_HDF5": "application/x-hdf5",
+                    "PILATUS_HDF5": "application/x-hdf5",
                     "AD_TIFF": "multipart/related;type=image/tiff",
                     "APB": "application/x-pizzabox-binary",
                     "APB_TRIGGER": "application/x-pizzabox-binary",
