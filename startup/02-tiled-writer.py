@@ -1,9 +1,34 @@
+import collections
+import importlib
+import math
 import numpy
 import os
+import warnings
+from typing import Literal
 
 from bluesky_tiled_plugins import TiledWriter
 from bluesky.callbacks.buffer import BufferingWrapper
 from tiled.client import from_uri
+from tiled.mimetypes import DEFAULT_ADAPTERS_BY_MIMETYPE
+from tiled.structures.array import ArrayStructure, BuiltinDtype, StructDtype
+from tiled.structures.core import StructureFamily
+from tiled.structures.data_source import Asset, DataSource, Management
+from tiled.utils import OneShotCachedMap, path_from_uri, ensure_uri
+
+# User-provided adapters take precedence over defaults.
+CUSTOM_ADAPTERS_BY_MIMETYPE = OneShotCachedMap[str, type](
+    {
+        "application/x-pizzabox-binary": lambda: importlib.import_module(
+            "mng2sql.adapters.pizzabox", __name__
+        ).PizzaBoxAdapter,
+        "application/x-hdf5;type=xia-xmap": lambda: importlib.import_module(
+            "mng2sql.adapters.xiaxmap", __name__
+        ).XIAxMAPAdapter,
+    }
+)
+DEFAULT_ADAPTERS_BY_MIMETYPE = collections.ChainMap(
+    CUSTOM_ADAPTERS_BY_MIMETYPE, DEFAULT_ADAPTERS_BY_MIMETYPE
+)
 
 # Define document-specific patches to be applied before sending them to TiledWriter
 
@@ -102,6 +127,187 @@ def patch_resource(doc):
     return doc
 
 
+# Define custom consolidators for Pizzabox data
+from bluesky_tiled_plugins.writing.consolidators import CONSOLIDATOR_REGISTRY, ConsolidatorBase
+class PizzaBoxConsolidator(ConsolidatorBase):
+    supported_mimetypes: set[str] = {"application/x-pizzabox-binary"}
+
+    def validate(self, fix_errors=False) -> list[str]:
+        notes = super().validate(fix_errors=fix_errors)
+
+        # Initialize adapter from uris and try to locate missing files
+        adapter_class = DEFAULT_ADAPTERS_BY_MIMETYPE[self.mimetype]
+        uris = [asset.data_uri for asset in self.assets]
+        uri_bin, uri_txt = adapter_class.locate_files(*uris)
+
+        if uri_txt and uris == [uri_bin]:
+            if not fix_errors:
+                raise ValueError(
+                    f"Missing asset for PizzaBox binary metadata file: {uri_txt}"
+                )
+            else:
+                self.assets.append(
+                    Asset(data_uri=uri_txt, is_directory=False, parameter="metadata")
+                )
+                msg = f"Registered missing asset for PizzaBox binary metadata file: {uri_txt.split('/')[-1]}"
+                warnings.warn(msg, stacklevel=2)
+                notes.append(msg)
+
+        assert self.init_adapter() is not None, "Adapter can not be initialized"
+
+        return notes
+
+class CSVConsolidator(ConsolidatorBase):
+    supported_mimetypes: set[str] = {"text/csv;header=absent"}
+    join_method: Literal["stack", "concat"] = "concat"
+    join_chunks: bool = False
+
+    def adapter_parameters(self) -> dict:
+        allowed_keys = {
+            "comment",
+            "delimiter",
+            "dtype",
+            "encoding",
+            "header",
+            "names",
+            "nrows",
+            "sep",
+            "skipfooter",
+            "skiprows",
+            "usecols",
+        }
+        return {
+            k: v
+            for k, v in {"header": None, **self._sres_parameters}.items()
+            if k in allowed_keys
+        }
+
+    def validate(self, fix_errors=False) -> list[str]:
+        # CSVConsolidator needs special handling to validate the structure when the data_type is StructDtype.
+        # In this case, we need to check that the number of columns, their names and dtypes match.
+        # The shape and chunks are also validated.
+        # If data_type is BuiltinDtype, we can rely on the base class implementation.
+
+        if isinstance(self.data_type, StructDtype):
+            from tiled.adapters.csv import CSVAdapter
+            import pyarrow.types as patypes
+
+            uris = [asset.data_uri for asset in self.assets]
+            adapter = CSVAdapter.from_uris(
+                uris[0], **self.adapter_parameters()
+            )  # Initialize from the first file
+            column_dtypes = adapter.structure().arrow_schema_decoded.types
+            notes = []
+
+            if len(column_dtypes) != len(self.data_type.fields):
+                raise ValueError(
+                    f"Number of columns mismatch: {len(column_dtypes)} != {len(self.data_type.fields)}"
+                )
+
+            # Construct the true StructDtype of the data as read by the adapter
+            true_column_names_dtypes = []
+            for indx, expected, true_column_dtype in zip(range(len(self.data_type.fields)), self.data_type.fields, column_dtypes):
+                if patypes.is_string(true_column_dtype) or patypes.is_large_string(true_column_dtype):
+                    _true_dtype = np.array([str(x) for x in adapter.read(indx)]).dtype   # becomes "<Un" dtype
+                else:
+                    _true_dtype = true_column_dtype.to_pandas_dtype()
+                true_column_names_dtypes.append((expected.name, _true_dtype))
+
+            true_numpy_dtype = np.dtype(true_column_names_dtypes)
+            true_dtype = StructDtype.from_numpy_dtype(true_numpy_dtype)
+
+            if self.data_type != true_dtype:
+                if not fix_errors:
+                    raise ValueError(
+                        f"dtype mismatch: {self.data_type} != {true_dtype}"
+                    )
+                else:
+                    msg = f"Fixed dtype mismatch: {self.data_type.to_numpy_dtype()} -> {true_numpy_dtype}"  # noqa
+                    warnings.warn(msg, stacklevel=2)
+                    self.data_type = true_dtype
+                    notes.append(msg)
+
+            # Get the shape and chunk shape by reading the first column of the CSV file
+            nrows, npartitions = len(adapter.read([0])), adapter.structure().npartitions
+            dim0_chunks = list_summands(nrows, math.ceil(nrows / npartitions))
+            # If there are multiple files, add their chunks as well
+            for uri in uris[1:]:
+                adapter = CSVAdapter.from_uris(uri, **self.adapter_parameters())
+                nrows, npartitions = (
+                    len(adapter.read([0])),
+                    adapter.structure().npartitions,
+                )
+                dim0_chunks = (
+                    *dim0_chunks,
+                    *list_summands(nrows, math.ceil(nrows / npartitions)),
+                )
+            # Determine the true shape and chunks for the entire dataset
+            true_shape, true_chunks = (sum(dim0_chunks), 1), (dim0_chunks, (1,))
+
+            if self.shape != true_shape:
+                if not fix_errors:
+                    raise ValueError(f"Shape mismatch: {self.shape} != {true_shape}")
+                else:
+                    msg = f"Fixed shape mismatch: {self.shape} -> {true_shape}"
+                    warnings.warn(msg, stacklevel=2)
+                    self._num_rows = true_shape[0]
+                    self.datum_shape = (1, 1) if self.join_method == "concat" else (1,)
+                    notes.append(msg)
+
+            if self.chunks != true_chunks:
+                if not fix_errors:
+                    raise ValueError(
+                        f"Chunk shape mismatch: {self.chunks} != {true_chunks}"
+                    )
+                else:
+                    if len(true_chunks[0]) == 1 or (
+                        len(set(true_chunks[0][:-1])) == 1
+                        and (true_chunks[0][-1] <= true_chunks[0][0])
+                    ):
+                        # Either single chunk or all chunks except possibly the last one are the same (larger) size
+                        _chunk_shape = tuple(c[0] for c in true_chunks)
+                        msg = f"Fixed chunk shape mismatch: {self.chunk_shape} -> {_chunk_shape}"
+                        warnings.warn(msg, stacklevel=2)
+                        self.chunk_shape = _chunk_shape
+                        self.join_chunks = True
+                        notes.append(msg)
+                    else:
+                        msg = f"Fixed chunk shape mismatch along the leading dimension: {true_chunks[0]}"
+                        warnings.warn(msg, stacklevel=2)
+                        self.chunks = true_chunks
+                        notes.append(msg)
+
+            if self.dims and (len(self.dims) != len(true_shape)):
+                if not fix_errors:
+                    raise ValueError(
+                        "Number of dimension names mismatch for a "
+                        f"{len(true_shape)}-dimensional array: {self.dims}"
+                    )
+                else:
+                    old_dims = self.dims
+                    if len(old_dims) < len(true_shape):
+                        self.dims = (
+                            ("time",)
+                            + old_dims
+                            + tuple(
+                                f"dim{i}"
+                                for i in range(len(old_dims) + 1, len(true_shape))
+                            )
+                        )
+                    else:
+                        self.dims = old_dims[: len(true_shape)]
+                    msg = f"Fixed dimension names: {old_dims} -> {self.dims}"
+                    warnings.warn(msg, stacklevel=2)
+                    notes.append(msg)
+
+            assert self.get_adapter() is not None, "Adapter can not be initialized"
+
+        else:
+            notes = super().validate(fix_errors=fix_errors)
+
+        return notes
+
+
 # Initialize the Tiled client and the TiledWriter
 api_key = os.environ.get("TILED_BLUESKY_WRITING_API_KEY_QAS")
 tiled_writing_client_sql = from_uri("https://tiled.nsls2.bnl.gov", api_key=api_key)['qas']['migration']
@@ -121,6 +327,7 @@ tw = TiledWriter(client = tiled_writing_client_sql,
                     "APB": "application/x-pizzabox-binary",
                     "APB_TRIGGER": "application/x-pizzabox-binary",
                     "PIZZABOX_ENC_FILE_TXT": "text/csv;header=absent",
+                    "XIA_XMAP_HDF5": "application/x-hdf5;type=xia-xmap",
                     "XSP3": "application/x-hdf5",
                     "XSP3X": "application/x-hdf5",
                  },
@@ -137,13 +344,4 @@ RE.md["tiled_access_tags"] = ("qas_beamline",)   # This is general QAS access ta
 
 # Subscribe the TiledWriter
 RE.subscribe(tw)
-
-
-
-# TODO: Ensure that filenames of PizzaBox assests are properly handled in Resource documents (not in Events!)
-# Events should not include any of these data_keys:
-# APB_AVE_FILENAMES = {"apb_ave_filename_bin", "apb_ave_filename_txt",
-#                      "apb_ave_c_filename_bin", "apb_ave_c_filename_txt",
-#                      "apb_filename_bin", "apb_filename_txt",
-#                      "apb_c_filename_bin", "apb_c_filename_txt"}
 
