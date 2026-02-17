@@ -80,8 +80,12 @@ ophyd.signal.EpicsSignalRO.set_defaults(timeout=GLOBAL_TIMEOUT, connection_timeo
 
 beamline_id = 'qas'
 
-from databroker.v0 import Broker #Old data broker 2025-August-21
-# from databroker.v1 import Broker #new databroker 2025-August-21 test with Kari
+is_old_db = False
+
+if is_old_db:
+    from databroker.v0 import Broker #Old data broker 2025-August-21
+else:
+    from databroker.v1 import Broker #new databroker 2025-August-21 test with Kari
 # from databroker import Broker
 db = Broker.named(beamline_id)
 
@@ -96,7 +100,7 @@ def patched_insert(name, doc):
 
 nslsii.configure_base(
     get_ipython().user_ns, 
-    None if is_new_env else db,
+    None if (is_new_env and is_old_db) else db,
     # broker_name=beamline_id, 
     bec=False, 
     pbar=False,
@@ -104,7 +108,7 @@ nslsii.configure_base(
     redis_url = "info.qas.nsls2.bnl.gov"
     )
 # nslsii.configure_kafka_publisher(RE, 'qas')
-if is_new_env:
+if is_new_env and is_old_db:
     RE.subscribe(patched_insert)
 import redis
 from redis_json_dict import RedisJSONDict
