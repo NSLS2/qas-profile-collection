@@ -12,6 +12,7 @@ import psutil
 import subprocess
 from pathlib import Path
 from packaging import version
+from tiled.client import from_profile
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -30,6 +31,19 @@ handler1.setFormatter(logging.Formatter(fmt=log_file_format))
 logger_open_files.addHandler(handler1)
 logger_open_files.propagate = False
 
+
+# Configure a Tiled reading client
+tiled_reading_client = from_profile("nsls2")["qas"]["raw"]
+# Configure a Tiled writing client
+tiled_writing_client = from_profile("nsls2", api_key=os.environ["TILED_BLUESKY_WRITING_API_KEY_QAS"])["qas"]["raw"]
+
+class TiledInserter:
+    name = 'qas'
+
+    def insert(self, name, doc):
+        tiled_writing_client.post_document(name, doc)
+
+tiled_inserter = TiledInserter()
 
 
 def time_now_str():
@@ -96,15 +110,29 @@ def patched_insert(name, doc):
     else:
         db.insert(name, doc)
 
+# # Before Data Security
+# nslsii.configure_base(
+#     get_ipython().user_ns, 
+#     None if (is_new_env and is_old_db) else db,
+#     # broker_name=beamline_id, 
+#     bec=False, 
+#     pbar=False,
+#     publish_documents_with_kafka=False,
+#     # redis_url = "info.qas.nsls2.bnl.gov"
+#     )
+
+# Data Security - Sync-Experiment
 nslsii.configure_base(
-    get_ipython().user_ns, 
-    None if (is_new_env and is_old_db) else db,
-    # broker_name=beamline_id, 
-    bec=False, 
-    pbar=False,
-    publish_documents_with_kafka=False,
-    # redis_url = "info.qas.nsls2.bnl.gov"
-    )
+    get_ipython().user_ns,
+    tiled_inserter,
+    publish_documents_with_kafka=True,
+    # redis_url="xf07bm-qas-redis1.nsls2.bnl.gov",
+    # redis_port=6380,
+    # redis_ssl=True,
+)
+
+db = Broker(tiled_reading_client)  # Keep for backcompatibility with older code that uses databroker
+
 # nslsii.configure_kafka_publisher(RE, 'qas')
 if is_new_env and is_old_db:
     RE.subscribe(patched_insert)
