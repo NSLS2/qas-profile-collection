@@ -11,6 +11,7 @@ import numpy as np
 import dask.array as da
 
 from bluesky_tiled_plugins import TiledWriter
+from bluesky_tiled_plugins.writing.consolidators import list_summands
 from bluesky.callbacks.buffer import BufferingWrapper
 from tiled.client import from_uri
 from tiled.mimetypes import DEFAULT_ADAPTERS_BY_MIMETYPE
@@ -261,6 +262,7 @@ def patch_resource(doc):
 
 # Define custom consolidators for Pizzabox data
 from bluesky_tiled_plugins.writing.consolidators import CONSOLIDATOR_REGISTRY, ConsolidatorBase
+
 class PizzaBoxConsolidator(ConsolidatorBase):
     supported_mimetypes: set[str] = {"application/x-pizzabox-binary"}
 
@@ -284,8 +286,6 @@ class PizzaBoxConsolidator(ConsolidatorBase):
                 msg = f"Registered missing asset for PizzaBox binary metadata file: {uri_txt.split('/')[-1]}"
                 warnings.warn(msg, stacklevel=2)
                 notes.append(msg)
-
-        assert self.init_adapter() is not None, "Adapter can not be initialized"
 
         return notes
 
@@ -432,12 +432,13 @@ class CSVConsolidator(ConsolidatorBase):
                     warnings.warn(msg, stacklevel=2)
                     notes.append(msg)
 
-            assert self.get_adapter() is not None, "Adapter can not be initialized"
-
         else:
             notes = super().validate(fix_errors=fix_errors)
 
         return notes
+
+CONSOLIDATOR_REGISTRY.update({'application/x-pizzabox-binary': PizzaBoxConsolidator,
+                              'text/csv;header=absent': CSVConsolidator})
 
 
 # Initialize the Tiled client and the TiledWriter
@@ -475,5 +476,5 @@ tw = BufferingWrapper(tw)
 RE.md["tiled_access_tags"] = ("qas_beamline",)   # This is general QAS access tag
 
 # Subscribe the TiledWriter
-RE.subscribe(tw)
+# RE.subscribe(tw)
 

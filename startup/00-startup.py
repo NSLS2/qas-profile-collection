@@ -80,16 +80,17 @@ ophyd.signal.EpicsSignalRO.set_defaults(timeout=GLOBAL_TIMEOUT, connection_timeo
 
 beamline_id = 'qas'
 
-is_old_db = False
+is_old_db = True
 
 if is_old_db:
     from databroker.v0 import Broker #Old data broker 2025-August-21
 else:
     from databroker.v1 import Broker #new databroker 2025-August-21 test with Kari
+
 # from databroker import Broker
 db = Broker.named(beamline_id)
 
-print("000")
+# print("000")
 
 def patched_insert(name, doc):
     if name == 'event_page':
@@ -113,7 +114,7 @@ if is_new_env and is_old_db:
 import redis
 from redis_json_dict import RedisJSONDict
 # RE.md = RedisJSONDict(redis.Redis("info.qas.nsls2.bnl.gov", 6379), prefix="")
-print("001")
+# print("001")
 # TODO: remove after testing.
 # sys.addaudithook(audit)
 RE.subscribe(stop_callback, name='stop')
@@ -143,7 +144,7 @@ import os
 import sys
 from datetime import datetime
 import functools
-print("002")
+# print("002")
 from bluesky.utils import ts_msg_hook
 # The logs will be saved to the profile dir.
 profile_startup_dir = get_ipython().profile_dir.startup_dir
@@ -190,7 +191,7 @@ RE.md['group'] = beamline_id
 RE.md['beamline_id'] = beamline_id.upper()
 RE.md['Facility'] = 'NSLS-II'
 
-print("003")
+# print("003")
 # RE.md['Mono_pulses_per_deg']=
 
 # isstools reads these
@@ -208,7 +209,7 @@ RE.is_aborted = False
 
 # This enables counters of PVs.
 ophyd.set_cl(pv_telemetry=True)
-print("004")
+# print("004")
 def print_now():
     return datetime.strftime(datetime.now(), '%Y-%m-%d %H:%M:%S.%f')
     if timeout is DEFAULT_CONNECTION_TIMEOUT:
