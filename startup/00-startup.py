@@ -8,11 +8,13 @@ import event_model
 
 import appdirs
 import sys
+import os
 import psutil
 import subprocess
 from pathlib import Path
 from packaging import version
 from tiled.client import from_profile
+from databroker import Broker
 
 import logging
 from logging.handlers import TimedRotatingFileHandler
@@ -94,24 +96,22 @@ ophyd.signal.EpicsSignalRO.set_defaults(timeout=GLOBAL_TIMEOUT, connection_timeo
 
 beamline_id = 'qas'
 
-is_old_db = True
+# is_old_db = True
 
-if is_old_db:
-    from databroker.v0 import Broker #Old data broker 2025-August-21
-else:
-    from databroker.v1 import Broker #new databroker 2025-August-21 test with Kari
+# if is_old_db:
+#     from databroker.v0 import Broker #Old data broker 2025-August-21
+# else:
+#     from databroker.v1 import Broker #new databroker 2025-August-21 test with Kari
 
-# from databroker import Broker
-db = Broker.named(beamline_id)
+# # from databroker import Broker
+# db = Broker.named(beamline_id)
 
-# print("000")
-
-def patched_insert(name, doc):
-    if name == 'event_page':
-        for e_doc in event_model.unpack_event_page(doc):
-            db.insert('event', e_doc)
-    else:
-        db.insert(name, doc)
+# def patched_insert(name, doc):
+#     if name == 'event_page':
+#         for e_doc in event_model.unpack_event_page(doc):
+#             db.insert('event', e_doc)
+#     else:
+#         db.insert(name, doc)
 
 # # Before Data Security
 # nslsii.configure_base(
@@ -121,24 +121,21 @@ def patched_insert(name, doc):
 #     bec=False, 
 #     pbar=False,
 #     publish_documents_with_kafka=False,
-#     # redis_url = "info.qas.nsls2.bnl.gov"
+#     redis_url = "info.qas.nsls2.bnl.gov"
 #     )
 
 # Data Security - Sync-Experiment
 nslsii.configure_base(
     get_ipython().user_ns,
     tiled_inserter,
-    publish_documents_with_kafka=True,
-    # redis_url="xf07bm-qas-redis1.nsls2.bnl.gov",
-    # redis_port=6380,
-    # redis_ssl=True,
+    publish_documents_with_kafka=False,
+    bec=False, 
+    pbar=False,
+    redis_url = "info.qas.nsls2.bnl.gov"
 )
 
 db = Broker(tiled_reading_client)  # Keep for backcompatibility with older code that uses databroker
 
-# nslsii.configure_kafka_publisher(RE, 'qas')
-if is_new_env and is_old_db:
-    RE.subscribe(patched_insert)
 import redis
 from redis_json_dict import RedisJSONDict
 # RE.md = RedisJSONDict(redis.Redis("info.qas.nsls2.bnl.gov", 6379), prefix="")
