@@ -8,7 +8,6 @@ from collections import deque
 
 import numpy as np
 import pandas as pd
-import paramiko
 from ophyd import Device, Component as Cpt, EpicsSignal, EpicsSignalRO, Kind
 from ophyd.sim import NullStatus
 from ophyd.status import SubscriptionStatus
