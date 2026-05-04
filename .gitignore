@@ -112,3 +112,6 @@ zz-dama.py
 *~
 
 .vscode/*
+# pixi environments
+.pixi/*
+!.pixi/config.toml
