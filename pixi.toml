@@ -31,11 +31,13 @@ databroker = "==2.0.0"
 epicscorelibs = ">=7.0.7.99.1.1,<8"
 bluesky-tiled-plugins = "==2.0.2"
 ophyd-async = ">=0.13.7,<0.14"
+netcdf4 = "*"
 
 
 [feature.profile.pypi-dependencies]
-isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev = "1292723" }
-xas = { git = "https://github.com/nsls-ii-iss/xas" }
+isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev="b959299"}
+# isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev = "1292723" }
+xas = { git = "https://github.com/NSLS2/qas-xas" }
 pvxslibs = ">=1.3.2, <2"
 
 

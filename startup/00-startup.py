@@ -1,4 +1,6 @@
 print(__file__)
+import os
+os.environ['QT_API'] = 'pyqt5'
 
 # Try to capture 'core dump' reasons.
 import faulthandler
