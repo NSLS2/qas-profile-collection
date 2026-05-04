@@ -108,7 +108,10 @@ nslsii.configure_base(
     bec=False, 
     pbar=False,
     publish_documents_with_kafka=False,
-    redis_url = "info.qas.nsls2.bnl.gov"
+    # redis_url = "info.qas.nsls2.bnl.gov"
+    redis_url = "xf07bm-qas-redis1.nsls2.bnl.gov",
+    redis_port=6380,
+    redis_ssl=True,
     )
 # nslsii.configure_kafka_publisher(RE, 'qas')
 if is_new_env and is_old_db:
