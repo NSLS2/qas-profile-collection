@@ -313,7 +313,7 @@ tw = TiledWriter(client = tiled_writing_client_sql,
                     "XSP3": "application/x-hdf5",
                     "XSP3X": "application/x-hdf5",
                  },
-                 validate=True,
+                 validate=False,
                 #  batch_size=1,    # Uncomment to enable streaming
                  )
 
