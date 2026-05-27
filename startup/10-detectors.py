@@ -326,14 +326,25 @@ class EncoderFS(Encoder):
             # write_path_template = '/data/nsls2/qas-new/legacy/raw/pizza_box_data/%Y/%m/%d/'
 
             filename = 'en_' + str(uuid.uuid4())[:6]
-            write_path_template = os.path.join('pizza_box_data/%Y/%m/%d', filename)
+            self._filename = filename
+
+            parent = getattr(self, 'parent', None)
+            if parent is not None:
+                md = parent._md
+                full_path = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/encpb/{datetime.strftime(datetime.now(), "%Y/%m/%d")}/{filename}'
+                # print("ENCPB filename", full_path)
+                # self._ioc_full_path = full_path
+
+
+            # write_path_template = os.path.join('pizza_box_data/%Y/%m/%d', filename)
             # path without the root
-            resource_path = datetime.now().strftime(write_path_template)
+            # resource_path = datetime.now().strftime(write_path_template)
             # ROOT_PATH = '/home/xf07bm/TestData/'
-            filepath = os.path.join(ROOT_PATH, RAW_FILEPATH, resource_path)
+            # filepath = os.path.join(ROOT_PATH, RAW_FILEPATH, resource_path)
 
             # without the root, but with data path + date folders
-            self._full_path = filepath
+            self._full_path = full_path
+
             # FIXME: Quick TEMPORARY fix for beamline disaster
             # we are writing the file to a temp directory in the ioc and
             # then moving it to the GPFS system.
@@ -347,8 +358,8 @@ class EncoderFS(Encoder):
 
             self._resource_uid = str(uuid.uuid4())
             resource = {'spec': 'PIZZABOX_ENC_FILE_TXT',
-                        'root': os.path.join(ROOT_PATH, RAW_FILEPATH),
-                        'resource_path': resource_path,
+                        'root': f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/encpb/{datetime.strftime(datetime.now(), "%Y/%m/%d")}',
+                        'resource_path': full_path,
                         'resource_kwargs': {'chunk_size': self.chunk_size},
                         'path_semantics': {'posix': 'posix', 'nt': 'windows'}[os.name],
                         'uid': self._resource_uid}
@@ -599,7 +610,9 @@ class PizzaBoxFS(Device):
     do3 = Cpt(DigitalOutput, '-DO:3', reg=db.reg)
 
     def __init__(self, *args, **kwargs):
+        md = kwargs.pop('md', None)
         super().__init__(*args, **kwargs)
+        self._md = md
         # must use internal timestamps or no bytes are written
 
     def kickoff(self):
@@ -620,11 +633,11 @@ class PizzaBoxFS(Device):
             yield from getattr(self, attr_name).collect()
 
 print("init pizza box")
-pb1 = PizzaBoxFS('XF:07BM-CT{Enc01', name = 'pb1')
+pb1 = PizzaBoxFS('XF:07BM-CT{Enc01', name = 'pb1', md=RE.md)
 #pb1.enc1.pulses_per_deg = 9400000/360
 pb1.enc1.pulses_per_deg=23600*400/360
 
-pb2 = PizzaBoxFS('XF:07BMB-CT{Enc02', name = 'pb2')
+pb2 = PizzaBoxFS('XF:07BMB-CT{Enc02', name = 'pb2', md=RE.md)
 print('done')
 
 

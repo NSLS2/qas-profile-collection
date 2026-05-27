@@ -134,8 +134,10 @@ class AnalogPizzaBox(Device):
     filetxt_status = Cpt(EpicsSignal, 'FA:Stream:Txt:File:Status-I')
 
     def __init__(self, *args, **kwargs):
+        md = kwargs.pop('md', None)
         super().__init__(*args, **kwargs)
         self._IP = '10.66.59.42'
+        self._md = md
 
 
 apb = AnalogPizzaBox(prefix="XF:07BMB-CT{PBA:1}:", name="apb")
@@ -252,19 +254,24 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         file_uid = new_uid()
         self.calc_num_points()
         self.stream_samples.put(self.num_points)
+
+        md = self._md
+        if self._md is None:
+            raise("No metadata for APB")
         #self.filename_target = f'{ROOT_PATH}/data/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # Note: temporary static file name in GPFS, due to the limitation of 40 symbols in the filename field.
         #self.filename = f'/home/Sace{file_uid[:8]}'
 
-
-        self.filename = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
+        self.filename = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
+        # self.filename = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # self.filename = f'/home/xf07bm/TestData/raw/apb/2023/03/28/{file_uid}'
         self.filename_bin.put(f'{self.filename}.bin')
         self.filename_txt.put(f'{self.filename}.txt')
 
         self._resource_uid = new_uid()
         resource = {'spec': 'APB',
-                    'root': ROOT_PATH,  # from 00-startup.py (added by mrakitin for future generations :D)
+                    # 'root': ROOT_PATH,  # from 00-startup.py (added by mrakitin for future generations :D)
+                    "root": f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}',
                     'resource_path': f'{self.filename}.bin',
                     'resource_kwargs': {},
                     'path_semantics': os.name,
@@ -391,7 +398,7 @@ for det in apb_dets:
         start_time = ttime.monotonic()
         print(f"  Attempt #{num_attempt + 1}: Waiting for connection for '{det_name}' for {more_wait_time} seconds...")
         try:
-            globals()[det_name] = AnalogPizzaBoxStream(prefix=det["prefix"], name=det_name)
+            globals()[det_name] = AnalogPizzaBoxStream(prefix=det["prefix"], name=det_name, md=RE.md)
             globals()[det_name].wait_for_connection(timeout=more_wait_time)
             duration = ttime.monotonic() - start_time
             print(f"  '{det_name}' connected on attempt #{num_attempt + 1} within {duration:.3f} seconds.")

@@ -182,6 +182,7 @@ logging.getLogger('caproto.ch').setLevel('ERROR')
 
 ROOT_PATH        = '/nsls2/data/qas-new/legacy'
 ROOT_PATH_SHARED = '/nsls2/data/qas-new/shared'
+ROOT_PATH_DS = '/nsls2/data/qas-new/proposals'
 RAW_FILEPATH = 'raw'
 USER_FILEPATH = 'processed'
 

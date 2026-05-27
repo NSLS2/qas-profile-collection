@@ -28,12 +28,14 @@ class AnalogPizzaBoxTrigger(Device):
 
 
     def __init__(self, *args, **kwargs):
+        md = kwargs.pop("md", None)
         super().__init__(*args, **kwargs)
         self._acquiring = None
 
         self._asset_docs_cache = deque()
         self._resource_uid = None
         self._datum_counter = None
+        self._md = md
 
     # Step-scan interface
     def stage(self, *args, **kwargs):
@@ -41,12 +43,19 @@ class AnalogPizzaBoxTrigger(Device):
         # self.filename_target = f'{ROOT_PATH}/data/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # Note: temporary static file name in GPFS, due to the limitation of 40 symbols in the filename field.
         # self.filename = f'{ROOT_PATH}/data/apb/{file_uid[:8]}'
-        self.fn = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
+
+        md = self._md
+        if md is None:
+            raise("No metadata for APBT")
+
+        self.fn = f'{ROOT_PATH_DS}/{md['cycle']}/{md['data_session']}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
+        # self.fn = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
         self.filename.put(f'{self.fn}')
 
         self._resource_uid = new_uid()
         resource = {'spec': 'APB_TRIGGER',
-                    'root': ROOT_PATH,  # from 00-startup.py (added by mrakitin for future generations :D)
+                    "root": f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}',
+                    # 'root': ROOT_PATH,  # from 00-startup.py (added by mrakitin for future generations :D)
                     'resource_path': f'{self.fn}',
                     'resource_kwargs': {},
                     'path_semantics': os.name,
@@ -149,8 +158,8 @@ class AnalogPizzaBoxTrigger(Device):
         self.num_points = int(round(acq_num_points, ndigits=-3))
 
 #XF:07BMB-CT{PBA:1}:Pulse:1:Frequency-SP
-apb_trigger = AnalogPizzaBoxTrigger(prefix="XF:07BMB-CT{PBA:1}:Pulse:1:", name="apb_trigger")
-apb_trigger_pil900k = AnalogPizzaBoxTrigger(prefix="XF:07BMB-CT{PBA:1}:Pulse:2:", name="apb_trigger_pil900k")
+apb_trigger = AnalogPizzaBoxTrigger(prefix="XF:07BMB-CT{PBA:1}:Pulse:1:", name="apb_trigger", md=RE.md)
+apb_trigger_pil900k = AnalogPizzaBoxTrigger(prefix="XF:07BMB-CT{PBA:1}:Pulse:2:", name="apb_trigger_pil900k", md=RE.md)
 
 
 
