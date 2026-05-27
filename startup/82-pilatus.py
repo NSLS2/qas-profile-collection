@@ -366,7 +366,7 @@ class PilatusHDF5Squashing(PilatusHDF5):
     )
     proc = Cpt(ProcessPlugin, "Proc1:")
 
-    tiff_file_path = Cpt(SignalWithRBV, "TIFF1:FileName", string=True)
+    # tiff_file_path = Cpt(SignalWithRBV, "TIFF1:FileName", string=True)
 
     # These attributes together replace `num_images`. They control
     # summing images before they are stored by the detector (a.k.a. "tiff

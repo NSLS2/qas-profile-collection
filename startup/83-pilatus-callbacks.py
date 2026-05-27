@@ -149,7 +149,7 @@ def export_md_to_txt(md, folder=None):
 
 def count_pilatus_qas(sample_name, frame_count, subframe_time, subframe_count, delay=None, shutter=shutter_fs, detector=pilatus,  **kwargs):
 
-    pilatus.tiff_file_path.put(sample_name)
+    # pilatus.tiff_file_path.put(sample_name)
 
 
 
@@ -168,7 +168,7 @@ def count_pilatus_qas(sample_name, frame_count, subframe_time, subframe_count, d
     frame_count: int
         passed to bp.count(..., num=frame_count)
     subframe_time: float
-        exposure time for each subframe, total exposure time will be subframe_time*subframe_count
+        exposure time for each subframe, total exposure time will be subframe_time*subframebsui_count
     subframe_count: int
         number of exposures to average for each frame
 
@@ -211,6 +211,8 @@ def count_pilatus_qas(sample_name, frame_count, subframe_time, subframe_count, d
     def finally_plan():
         for name, doc in db[-1].documents():
             pilatus_serializer_rr(name, doc)
+
+        print(f"---------------------------------In Pilatus Serializer--------------------------")
 
         __energy = mono1.energy.user_readback.get()
 
