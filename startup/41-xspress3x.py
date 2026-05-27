@@ -42,6 +42,35 @@ from databroker.assets.handlers import XS3_XRF_DATA_KEY as XRF_DATA_KEY
 #         resource_kwargs,
 #         **kwargs,
 
+class QASXspress3HDF5Plugin(Xspress3HDF5Plugin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if kwargs["root_path"] is None:
+            self.root_path.put(self.root_path_str)
+        if kwargs["path_template"] is None:
+            self.path_template.put(self.path_template_str)    
+
+    def stage(self, *args, **kwargs):
+        self.root_path.put(self.root_path_str)
+        return super().stage()
+
+    @property
+    def root_path_str(self):
+        # data_session = self._redis_dict["data_session"]
+        # cycle = self._redis_dict["cycle"]
+        data_session = RE.md["data_session"]
+        cycle = RE.md["cycle"]
+        # if "Commissioning" in get_proposal_type():
+        #     root_path = f"/nsls2/data/qas-new/proposals/commissioning/{data_session}/assets/xspress3x/"
+        # else:
+        root_path = f"/nsls2/data/qas-new/proposals/{cycle}/{data_session}/assets/xspress3x/"
+        return root_path
+
+    @property
+    def path_template_str(self):
+        path_template = "%Y/%m/%d"
+        return path_template
+
 
 # build a community IOC xspress3 class with 8 channels
 CommunityXspress3_8Channel = build_xspress3_class(
@@ -51,15 +80,12 @@ CommunityXspress3_8Channel = build_xspress3_class(
     xspress3_parent_classes=(Xspress3Detector, Xspress3Trigger),
     extra_class_members={
         "hdf5": Cpt(
-            Xspress3HDF5Plugin,
+            QASXspress3HDF5Plugin,
             "HDF1:",
             name="hdf5",
             resource_kwargs={},
-            # spec="XSP3X",
-            # These are overriden by properties.
-            # path_template="%Y",
-            path_template="%Y/%m/%d",
-            root_path="/nsls2/data/qas-new/legacy/raw/xspress3x/",
+            path_template=None,
+            root_path=None,
         )
     }
 )

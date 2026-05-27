@@ -203,13 +203,26 @@ RE.md['Facility'] = 'NSLS-II'
 # isstools reads these
 
 # check these keys exist, if not set to default
-keys = ["PI", "PROPOSAL", "SAF", "year", "cycle", "proposal_id"]
-defaults = ["No PI", None, None, 2018, 1, None]
-for key, default in zip(keys, defaults):
-    if key not in RE.md:
-        print("Warning {} not in RE.md.".format(key))
-        print("Set to default : {}".format(default))
-        RE.md[key] = default
+
+# keys = ["PI", "PROPOSAL", "SAF", "year", "cycle", "proposal_id"]
+# defaults = ["No PI", None, None, 2018, 1, None]
+# for key, default in zip(keys, defaults):
+#     if key not in RE.md:
+#         print("Warning {} not in RE.md.".format(key))
+#         print("Set to default : {}".format(default))
+#         RE.md[key] = default
+
+data_session = RE.md.get('data_session', '')
+proposal_info = RE.md.get('proposal', {})
+proposal_id = proposal_info.get('proposal_id', '')
+proposal_pi = proposal_info.get('pi_name', '')
+proposal_year = f'{datetime.strftime(datetime.now(), "%Y")}'
+
+RE.md['PROPOSAL'] = proposal_id
+RE.md['PI'] = proposal_pi
+if 'SAF' not in RE.md:
+    RE.md['SAF'] = None
+
 
 RE.is_aborted = False
 
