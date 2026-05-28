@@ -48,7 +48,7 @@ class AnalogPizzaBoxTrigger(Device):
         if md is None:
             raise("No metadata for APBT")
 
-        self.fn = f'{ROOT_PATH_DS}/{md['cycle']}/{md['data_session']}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
+        self.fn = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
         # self.fn = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
         self.filename.put(f'{self.fn}')
 
