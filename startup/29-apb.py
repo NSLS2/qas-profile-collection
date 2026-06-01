@@ -262,7 +262,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         # Note: temporary static file name in GPFS, due to the limitation of 40 symbols in the filename field.
         #self.filename = f'/home/Sace{file_uid[:8]}'
 
-        self.filename = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
+        self.filename = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb_b/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # self.filename = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}'
         # self.filename = f'/home/xf07bm/TestData/raw/apb/2023/03/28/{file_uid}'
         self.filename_bin.put(f'{self.filename}.bin')
@@ -271,7 +271,7 @@ class AnalogPizzaBoxStream(AnalogPizzaBoxAverage):
         self._resource_uid = new_uid()
         resource = {'spec': 'APB',
                     # 'root': ROOT_PATH,  # from 00-startup.py (added by mrakitin for future generations :D)
-                    "root": f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}',
+                    "root": f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb_b/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}',
                     'resource_path': f'{self.filename}.bin',
                     'resource_kwargs': {},
                     'path_semantics': os.name,

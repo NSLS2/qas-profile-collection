@@ -14,10 +14,10 @@ from ophyd.areadetector.filestore_mixins import FileStoreHDF5IterativeWrite, Fil
 from ophyd.areadetector.plugins import ImagePlugin_V33, ROIStatPlugin_V34
 from ophyd.sim import NullStatus
 
-ROOT_PATH = "/nsls2/data/qas-new/legacy"
-ROOT_PATH_SHARED = "/nsls2/data/qas-new/shared"
-RAW_PATH = "raw"
-USER_FILEPATH = "processed"
+# ROOT_PATH = "/nsls2/data/qas-new/legacy"
+# ROOT_PATH_SHARED = "/nsls2/data/qas-new/shared"
+# RAW_PATH = "raw"
+# USER_FILEPATH = "processed"
 
 ######################################################################################
 
@@ -177,6 +177,34 @@ class QASHDF5Plugin(HDF5Plugin_V33, FileStoreHDF5Squashing, FileStoreIterativeWr
 class HDF5PluginWithFileStore(HDF5Plugin_V33, FileStoreHDF5IterativeWrite):
     """Add this as a component to detectors that write HDF5s."""
 
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     if kwargs["root_path"] is None:
+    #         self.root_path.put(self.root_path_str)
+    #     if kwargs["path_template"] is None:
+    #         self.path_template.put(self.path_template_str)    
+
+    # def stage(self, *args, **kwargs):
+    #     self.root_path.put(self.root_path_str)
+    #     return super().stage()
+
+    # @property
+    # def root_path_str(self):
+    #     # data_session = self._redis_dict["data_session"]
+    #     # cycle = self._redis_dict["cycle"]
+    #     data_session = RE.md["data_session"]
+    #     cycle = RE.md["cycle"]
+    #     # if "Commissioning" in get_proposal_type():
+    #     #     root_path = f"/nsls2/data/qas-new/proposals/commissioning/{data_session}/assets/pilatus3/"
+    #     # else:
+    #     root_path = f"/nsls2/data/qas-new/proposals/{cycle}/{data_session}/assets/pilatus3/"
+    #     return root_path
+
+    # @property
+    # def path_template_str(self):
+    #     path_template = "%Y/%m/%d"
+    #     return path_template
+
     def get_frames_per_point(self):
         return 1
         # if not self.parent.is_flying:
@@ -325,8 +353,14 @@ class PilatusHDF5(PilatusBase):
     hdf5 = Cpt(
         HDF5PluginWithFileStore,
         suffix="HDF1:",
-        root="/",
-        write_path_template=f"{ROOT_PATH}/{RAW_PATH}/pilatus3/%Y/%m/%d",
+        # resource_kwargs={},
+ #       path_template=None,
+ #       root_path=None,
+ 
+        # root="/",
+        # write_path_template=f"{ROOT_PATH}/{RAW_PATH}/pilatus3/%Y/%m/%d",
+        root=f'{ROOT_PATH_DS}/{RE.md["cycle"]}/{RE.md["data_session"]}/assets/pilatus3',
+        write_path_template=f'{ROOT_PATH_DS}/{RE.md["cycle"]}/{RE.md["data_session"]}/assets/pilatus3/%Y/%m/%d',
     )  # ,
 
     # write_path_template=f'/nsls2/xf08id/data/pil900k/%Y/%m/%d')
@@ -358,11 +392,14 @@ class PilatusHDF5Squashing(PilatusHDF5):
     hdf5 = Cpt(
         QASHDF5Plugin,
         "HDF1:",
-        write_path_template=f"{ROOT_PATH}/{RAW_PATH}/pilatus3/%Y/%m/%d",
+        # write_path_template=f"{ROOT_PATH}/{RAW_PATH}/pilatus3/%Y/%m/%d",
         cam_name="cam",
         proc_name="proc",
         read_attrs=[],
-        root=f"{ROOT_PATH}/{RAW_PATH}/pilatus3",
+        # root=f"{ROOT_PATH}/{RAW_PATH}/pilatus3",
+        root=f'{ROOT_PATH_DS}/{RE.md["cycle"]}/{RE.md["data_session"]}/assets/pilatus3',
+        write_path_template=f'{ROOT_PATH_DS}/{RE.md["cycle"]}/{RE.md["data_session"]}/assets/pilatus3/%Y/%m/%d',
+ 
     )
     proc = Cpt(ProcessPlugin, "Proc1:")
 

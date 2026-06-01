@@ -48,13 +48,13 @@ class AnalogPizzaBoxTrigger(Device):
         if md is None:
             raise("No metadata for APBT")
 
-        self.fn = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
+        self.fn = f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb_b/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
         # self.fn = f'{ROOT_PATH}/raw/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}/{file_uid}.bin'
         self.filename.put(f'{self.fn}')
 
         self._resource_uid = new_uid()
         resource = {'spec': 'APB_TRIGGER',
-                    "root": f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}',
+                    "root": f'{ROOT_PATH_DS}/{md["cycle"]}/{md["data_session"]}/assets/apb_b/{dt.datetime.strftime(dt.datetime.now(), "%Y/%m/%d")}',
                     # 'root': ROOT_PATH,  # from 00-startup.py (added by mrakitin for future generations :D)
                     'resource_path': f'{self.fn}',
                     'resource_kwargs': {},
