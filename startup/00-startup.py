@@ -113,7 +113,7 @@ nslsii.configure_base(
     redis_port=6380,
     redis_ssl=True,
     )
-# nslsii.configure_kafka_publisher(RE, 'qas')
+nslsii.configure_kafka_publisher(RE, 'qas')
 if is_new_env and is_old_db:
     RE.subscribe(patched_insert)
 import redis
