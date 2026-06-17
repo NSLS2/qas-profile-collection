@@ -293,6 +293,7 @@ CONSOLIDATOR_REGISTRY.update({'application/x-pizzabox-binary': PizzaBoxConsolida
 # Initialize the Tiled client and the TiledWriter
 api_key = os.environ.get("TILED_BLUESKY_WRITING_API_KEY_QAS")
 tiled_writing_client_sql = from_uri("https://tiled.nsls2.bnl.gov", api_key=api_key)['qas']['migration']
+tiled_writing_client_sql.context.http_client.headers['tiled-qos'] = 'acquisition'
 tw = TiledWriter(client = tiled_writing_client_sql,
                  backup_directory="/tmp/tiled_backup",
                  patches = {"descriptor": patch_descriptor,
