@@ -249,7 +249,11 @@ class QASXspress3XHDF5Handler(Xspress3HDF5Handler):
     XRF_DATA_KEY = "entry/instrument/detector/data"
     def __init__(self, *args, **kwargs):
         print("Handler init kwargs", kwargs)
+        kwargs.pop('join_method', 'concat')
+        kwargs.pop('chunk_shape', [1])
+        kwargs.pop('dataset', '')
         super().__init__(*args, **kwargs)
+        # print("XSP3X _file", self._file)
         # self._filepath = filepath
 
     def _get_dataset(self):

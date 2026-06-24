@@ -4447,7 +4447,7 @@ packages:
   timestamp: 1762040524661
 - pypi: /nsls2/auto-storage/qas-new/shared/config/repos/isstools
   name: isstools
-  version: 2025.7.1+10.gb87f6b7.dirty
+  version: 2025.7.1+17.ge4765fe.dirty
   sha256: f8df103b3fcb18952aa96d80a08b64d9f3f4adae19867c0abcdfc02eb6fceb4e
   requires_dist:
   - numexpr
