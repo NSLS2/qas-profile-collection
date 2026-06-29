@@ -739,8 +739,8 @@ class QASAreaDetectorHDF5SWMRHandler(AreaDetectorHDF5SWMRHandler):
         return super().__call__(point_number)
 
 
-db.reg.register_handler('AD_HDF5_SWMR',
-                         QASAreaDetectorHDF5SWMRHandler, overwrite=True)
+# db.reg.register_handler('AD_HDF5_SWMR',
+#                          QASAreaDetectorHDF5SWMRHandler, overwrite=True)
 
 # An exception has occurred, use '%tb verbose' to see the full traceback.
 # AttributeError: 'Array' object has no attribute 'id'

@@ -66,7 +66,7 @@ def pilatus_serializer_factory(name, doc):
     return [serializer], []
 
 
-pilatus_serializer_rr = RunRouter([pilatus_serializer_factory], db.reg.handler_reg, fill_or_fail=True)
+# pilatus_serializer_rr = RunRouter([pilatus_serializer_factory], db.reg.handler_reg, fill_or_fail=True)
 
 
 
@@ -75,8 +75,8 @@ def save_tiffs_on_stop(name, doc):
         # pilatus.unstage()
         # TODO: rework with event-model's SingleRunDocumentRouter.
         run_start_uid = doc["run_start"]
-        for name, doc in db[run_start_uid].documents():
-            pilatus_serializer_rr(name, doc)
+        # for name, doc in db[run_start_uid].documents():
+        #     pilatus_serializer_rr(name, doc)
 
         # TODO 2: export an averaged array
         # data = np.array(list(hdr.data("pilatus_image")))
@@ -209,8 +209,8 @@ def count_pilatus_qas(sample_name, frame_count, subframe_time, subframe_count, d
         )
 
     def finally_plan():
-        for name, doc in db[-1].documents():
-            pilatus_serializer_rr(name, doc)
+        # for name, doc in db[-1].documents():
+        #     pilatus_serializer_rr(name, doc)
 
         print(f"---------------------------------In Pilatus Serializer--------------------------")
 
@@ -218,8 +218,8 @@ def count_pilatus_qas(sample_name, frame_count, subframe_time, subframe_count, d
 
         print(f"After XRD scan {__energy = }")
         print_to_gui("--------------------------XRD scan finished----------------------", add_timestamp=True)
-        hdr = db[-1]
-        export_md_to_txt(hdr.start)
+        # hdr = db[-1]
+        # export_md_to_txt(hdr.start)
         yield from bps.mv(shutter, "Close")
 
     return (yield from bpp.finalize_wrapper(inner_count_qas(), finally_plan))

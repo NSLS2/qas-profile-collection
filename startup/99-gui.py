@@ -143,6 +143,8 @@ if not app:
     app = QApplication(sys.argv)
 
 #newApp = PyQt5.QtWidgets.QApplication(sys.argv)
+print("Authenticating XliveGUI Tiled Client:")
+xlive_tiled_client = from_uri("https://tiled.nsls2.bnl.gov", username=None, remember_me=False)
 
 xlive_gui = isstools.xlive.XliveGui(plan_funcs=plan_funcs,
                                     diff_plans=[count_qas, dark_frame_preprocessor, count_pilatus_qas, count_pilatus_qas_dafs],
@@ -166,6 +168,7 @@ xlive_gui = isstools.xlive.XliveGui(plan_funcs=plan_funcs,
                                     wps = wps,
                                     mfc = mfc,
                                     window_title="XLive@QAS/7-BM NSLS-II",
+                                    tiled_client=xlive_tiled_client,
                                    )
 
 sys.stdout = xlive_gui.emitstream_out

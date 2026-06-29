@@ -430,8 +430,8 @@ class QASXspress3HDF5Handler(Xspress3HDF5Handler):
 
 
 # heavy-weight file handler
-db.reg.register_handler(QASXspress3HDF5Handler.HANDLER_NAME,
-                        QASXspress3HDF5Handler, overwrite=True)
+# db.reg.register_handler(QASXspress3HDF5Handler.HANDLER_NAME,
+#                         QASXspress3HDF5Handler, overwrite=True)
 
 
 class QASXspress3HDF5Handler_light(Xspress3HDF5Handler):

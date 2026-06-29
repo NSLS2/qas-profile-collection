@@ -156,11 +156,11 @@ class QASXspress3HDF5Handler(Xspress3HDF5Handler):
         #return pd.concat([df]+[attrsdf])
         return df
 
-db.reg.register_handler('PIZZABOX_AN_FILE_TXT',
-                        PizzaBoxAnHandlerTxt, overwrite=True)
-db.reg.register_handler('PIZZABOX_ENC_FILE_TXT',
-                        PizzaBoxEncHandlerTxt, overwrite=True)
-db.reg.register_handler('PIZZABOX_DI_FILE_TXT',
-                        PizzaBoxDIHandlerTxt, overwrite=True)
-db.reg.register_handler(QASXspress3HDF5Handler.HANDLER_NAME,
-                        QASXspress3HDF5Handler, overwrite=True)
+# db.reg.register_handler('PIZZABOX_AN_FILE_TXT',
+#                         PizzaBoxAnHandlerTxt, overwrite=True)
+# db.reg.register_handler('PIZZABOX_ENC_FILE_TXT',
+#                         PizzaBoxEncHandlerTxt, overwrite=True)
+# db.reg.register_handler('PIZZABOX_DI_FILE_TXT',
+#                         PizzaBoxDIHandlerTxt, overwrite=True)
+# db.reg.register_handler(QASXspress3HDF5Handler.HANDLER_NAME,
+#                         QASXspress3HDF5Handler, overwrite=True)

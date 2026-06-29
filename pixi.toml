@@ -29,7 +29,7 @@ hdf5-external-filter-plugins = ">=0.1.0,<0.2"
 blosc-hdf5-plugin = ">=1.0.1,<2"
 databroker = "==2.0.0"
 epicscorelibs = ">=7.0.7.99.1.1,<8"
-bluesky-tiled-plugins = "==2.0.2"
+bluesky-tiled-plugins = "==2.0.6"
 ophyd-async = ">=0.13.7,<0.14"
 netcdf4 = "*"
 
@@ -38,8 +38,8 @@ netcdf4 = "*"
 #isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev="b959299"}
 isstools = {path="/nsls2/data/qas-new/shared/config/repos/isstools/", editable= true}
 # isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev = "1292723" }
-xas = { git = "https://github.com/NSLS2/qas-xas" }
-#xas = {path="/nsls2/data/qas-new/shared/config/repos/xas/", editable= true}
+#xas = { git = "https://github.com/NSLS2/qas-xas" }
+xas = {path="/nsls2/data/qas-new/shared/config/repos/xas/", editable= true}
 pvxslibs = ">=1.3.2, <2"
 
 

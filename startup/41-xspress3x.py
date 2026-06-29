@@ -249,9 +249,9 @@ class QASXspress3XHDF5Handler(Xspress3HDF5Handler):
     XRF_DATA_KEY = "entry/instrument/detector/data"
     def __init__(self, *args, **kwargs):
         print("Handler init kwargs", kwargs)
-        kwargs.pop('join_method', 'concat')
-        kwargs.pop('chunk_shape', [1])
-        kwargs.pop('dataset', '')
+        # kwargs.pop('join_method', 'concat')
+        # kwargs.pop('chunk_shape', [1])
+        # kwargs.pop('dataset', '')
         super().__init__(*args, **kwargs)
         # print("XSP3X _file", self._file)
         # self._filepath = filepath
@@ -280,8 +280,8 @@ class QASXspress3XHDF5Handler(Xspress3HDF5Handler):
 
 
 # heavy-weight file handler
-db.reg.register_handler("XSP3X", #f"{QASXspress3XHDF5Handler.HANDLER_NAME}X",
-                        QASXspress3XHDF5Handler, overwrite=True)
+# db.reg.register_handler("XSP3X", #f"{QASXspress3XHDF5Handler.HANDLER_NAME}X",
+#                         QASXspress3XHDF5Handler, overwrite=True)
 
 
 # class QASXspress3HDF5Handler_light(Xspress3HDF5Handler):

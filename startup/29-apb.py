@@ -480,5 +480,5 @@ class APBBinFileHandler(HandlerBase):
 
 
 
-db.reg.register_handler('APB',
-                        APBBinFileHandler, overwrite=True)
+# db.reg.register_handler('APB',
+#                         APBBinFileHandler, overwrite=True)
