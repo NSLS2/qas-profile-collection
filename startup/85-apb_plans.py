@@ -158,8 +158,9 @@ def parse_trajectory_header(trajectory_filename=None):
 
 
 def get_md_for_scan(name, mono_scan_type, plan_name, experiment, detector=None, hutch=None, **metadata):
-        interp_fn = f"{ROOT_PATH}/{USER_FILEPATH}/{RE.md['year']}/{RE.md['cycle']}/{RE.md['PROPOSAL']}/{name}.raw"
+        interp_fn = f"{ROOT_PATH_DS}/{RE.md['cycle']}/pass-{RE.md['PROPOSAL']}/{name}.raw"
         interp_fn = validate_file_exists(interp_fn)
+        print("UPDATED SAVE LOCATION:" + interp_fn)
         #print(f'Storing data at {interp_fn}')
         curr_traj = getattr(mono1, 'traj{:.0f}'.format(mono1.lut_number_rbv.get()))
         trajectory_header_dict = parse_trajectory_header(mono1.trajectory_name.get())
