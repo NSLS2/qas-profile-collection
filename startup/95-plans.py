@@ -305,7 +305,8 @@ def get_offsets_plan(detectors = [apb_ave], time = 2):
 
    for detector in detectors:
        for i in range(0,8):
-           mean =  float(np.array(table[f'{detector.name}_ch{i+1}_mean']))
+        #    mean =  float(np.array(table[f'{detector.name}_ch{i+1}_mean']))
+           mean = table[f'{detector.name}_ch{i+1}_mean'][1]
            print(f'Mean {(mean)}')
            ch_offset = getattr(detector, f'ch{i+1}_offset')
            yield from bps.abs_set(ch_offset, mean)
