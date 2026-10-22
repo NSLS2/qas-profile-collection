@@ -37,7 +37,7 @@ pip = ">=26.2.2"
 
 [feature.profile.pypi-dependencies]
 #isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev="b959299"}
-#isstools = {path="/nsls2/data/qas-new/shared/config/repos/isstools/", editable= true}
+isstools = { path = "/nsls2/data/qas-new/shared/config/repos/isstools/", editable = true }
 # isstools = { git = "https://github.com/nsls-ii-qas/isstools", rev = "1292723" }
 xas = { git = "https://github.com/NSLS2/qas-xas" }
 #xas = {path="/nsls2/data/qas-new/shared/config/repos/xas/", editable= true}
