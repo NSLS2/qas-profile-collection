@@ -1,12 +1,9 @@
 [workspace]
 channels = ["conda-forge"]
 name = "qas-profile-collection"
-platforms = ["linux-64"]
+platforms = [{ platform = "linux-64", glibc = "2.17" }]
 version = "2026.2.0"
 requires-pixi = ">=0.82.1"
-
-[system-requirements]
-libc = "2.17"
 
 [feature.profile.dependencies]
 bluesky-base = "==1.15.1"
@@ -33,6 +30,9 @@ epicscorelibs = ">=7.0.7.99.1.1,<8"
 bluesky-tiled-plugins = "==2.0.10"
 ophyd-async = ">=0.21.2"
 netcdf4 = "*"
+ca-certificates = ">=2026.10.19"
+certifi = ">=2026.10.19"
+pip = ">=26.2.2"
 
 
 [feature.profile.pypi-dependencies]
@@ -62,7 +62,6 @@ ipython = ">=9.5.0"
 pyside6 = "*"
 numpy = ">2"
 
-
 [feature.terminal.tasks]
 start = "unset SESSION_MANAGER PYTHONPATH && MPLBACKEND=qtagg ipython --profile-dir=."
 pvs = "ipython --profile-dir=. -c 'get_pv_types(); exit()'"
@@ -71,16 +70,6 @@ pvs = "ipython --profile-dir=. -c 'get_pv_types(); exit()'"
 features = ["profile", "terminal"]
 solve-group = "profile"
 
-[environments.terminal.dependencies]
-ca-certificates = ">=2026.10.19"
-certifi = ">=2026.10.19"
-pip = ">=26.2.2"
-
 [environments.qs]
 features = ["profile", "qs"]
 solve-group = "profile"
-
-[environments.qs.dependencies]
-ca-certificates = ">=2026.10.19"
-certifi = ">=2026.10.19"
-pip = ">=26.2.2"
