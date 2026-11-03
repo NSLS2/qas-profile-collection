@@ -14,6 +14,9 @@ from tiled.mimetypes import DEFAULT_ADAPTERS_BY_MIMETYPE
 from tiled.structures.array import StructDtype
 from tiled.structures.data_source import Asset
 
+
+TILED_BACKUP_ROOT = "/nsls2/data/qas/shared/config/bluesky/tiled_backup"
+
 # Define document-specific patches to be applied before sending them to TiledWriter
 pb1_columns = ("ts_s", "ts_ns", "encoder", "index", "state")
 pb1_dtype_list = [(name, "<i8") for name in pb1_columns]
@@ -295,7 +298,7 @@ api_key = os.environ.get("TILED_BLUESKY_WRITING_API_KEY_QAS")
 tiled_writing_client_sql = from_uri("https://tiled.nsls2.bnl.gov", api_key=api_key)['qas']['migration']
 tiled_writing_client_sql.context.http_client.headers['tiled-qos'] = 'acquisition'
 tw = TiledWriter(client = tiled_writing_client_sql,
-                 backup_directory="/tmp/tiled_backup",
+                 backup_directory=TILED_BACKUP_ROOT,
                  patches = {"descriptor": patch_descriptor,
                             "datum": patch_datum,
                             "resource": patch_resource},
